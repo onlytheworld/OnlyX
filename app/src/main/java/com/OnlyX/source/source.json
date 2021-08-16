@@ -1,0 +1,176 @@
+[
+    {
+        "api": "动漫之家",
+        "type": "manga", 
+        "search": [
+            {
+                "url": [
+                    "http://s.acg.dmzj.com/comicsum/search.php?s=",
+                    "${input}"
+                ],
+                "format": "json",
+                "pattern": "\\[(\\{.*?\\})+,?\\]",
+                "matcher": {
+                    "precomic": "|",
+                    "comic": {
+                        "comic_id": "id",
+                        "title": "comic_name",
+                        "cover": "cover",
+                        "author": "comic_author",
+                        "status": "status",
+                        "last_update_chapter_name": "last_update_chapter_name",
+                        "rule": {
+                            "status": [
+                                {
+                                    "replace": {
+                                        "连载中": true,
+                                        "已完结": false
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "url": [
+                    "https://m.dmzj.com/search/",
+                    "${input}",
+                    ".html"
+                ],
+                "format": "json",
+                "pattern": "\\[(\\{.*?\\})+,?\\]",
+                "macher": {
+                    "precomic": "|",
+                    "comic": {
+                        "comic_id": "id",
+                        "title": "name",
+                        "alias_title": [
+                            "alias_name",
+                            "comic_py"
+                        ],
+                        "cover": "cover",
+                        "author": "authors",
+                        "type": "type",
+                        "status": "status",
+                        "last_update_chapter_name": "last_update_chapter_name",
+                        "last_update_chapter_id": "last_update_chapter_id",
+                        "last_update_time": "last_updatetime",
+                        "hot_hits": "hot_hits",
+                        "description": "description",
+                        "rule": {
+                            "cover": [
+                                {
+                                    "splice": [
+                                        "https://images.dmzj.com/",
+                                        "${cover}"
+                                    ]
+                                }
+                            ],
+                            "status": [
+                                {
+                                    "replace": {
+                                        "连载中": true,
+                                        "已完结": false
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ],
+        "info": [
+            {
+                "url": [
+                    "http://api.dmzj.com/dynamic/comicinfo/",
+                    "${comic_id}",
+                    ".json"
+                ],
+                "format": "json",
+                "matcher": {
+                    "precomic": "data:info:",
+                    "comic": {
+                        "comic_id": "id",
+                        "title": "title",
+                        "alias_title": "subtitle",
+                        "cover": "cover",
+                        "status": "status",
+                        "last_update_chapter_name": "last_update_chapter_name",
+                        "last_update_time": "last_updatetime",
+                        "author": "authors",
+                        "description": "description",
+                        "rule": {
+                            "status": [
+                                {
+                                    "replace": {
+                                        "连载中": true,
+                                        "已完结": false
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "prechapter": "data:list|",
+                    "chapter": {
+                        "comic_id": "comic_id",
+                        "chapter_id": "id",
+                        "chapter_title": "chapter_name",
+                        "chapter_order": "chapter_order",
+                        "chapter_file_size": "filesize",
+                        "chapter_update_time": "createtime"
+                    },
+                    "presimilar": "data:similar:",
+                    "similar": {
+                        "comic_id": "id",
+                        "title": "title",
+                        "last_update_chapter_name": "last_update_chapter_name",
+                        "cover": "cover"
+                    }
+                }
+            }
+        ],
+        "chapter": [
+            {
+                "url": [
+                    "http://m.dmzj.com/chapinfo/",
+                    "${comic_id}",
+                    "/",
+                    "${chapter_id}",
+                    ".html"
+                ],
+                "format": "json",
+                "matcher": {
+                    "chapter": {
+                        "comic_id": "comic_id",
+                        "chapter_id": "id",
+                        "chapter_title": "chapter_name",
+                        "chapter_order": "chapter_order",
+                        "chapter_update_time": "createtime",
+                        "chapter_file_size": "filesize",
+                        "chapter_page_number": "sum_pages"
+                    },
+                    "preimages": "page_url|",
+                    "image": {
+                        "url": "${this}",
+                        "rule": {
+                            "url": [
+                                {
+                                    "replace": {
+                                        "//g/": "/g/"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ],
+        "category": [
+            {}
+        ],
+        "classify": [
+            {}
+        ]
+    }
+]

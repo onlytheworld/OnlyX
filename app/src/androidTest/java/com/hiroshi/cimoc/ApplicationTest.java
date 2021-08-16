@@ -1,4 +1,4 @@
-package com.hiroshi.cimoc;
+package com.OnlyX;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

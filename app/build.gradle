@@ -1,28 +1,27 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'org.greenrobot.greendao'
 
-def buildVersion = 329
-def version = "v1.4.14"
+def buildVersion = 400
+def version = "v2.1"
 
 def cmdGetTagname = 'git describe --tags'
 def cmdGetCommitNums = 'git rev-list HEAD --count'
-if(System.getenv("TRAVIS_BUILD_NUMBER") != null){
-    buildVersion = System.getenv("TRAVIS_BUILD_NUMBER").trim().toInteger()
-    version = cmdGetTagname.execute().text.trim()
-}
-else {
-    buildVersion = cmdGetCommitNums.execute().text.trim().toInteger()
-}
-version = cmdGetTagname.execute().text.trim()
+//if(System.getenv("TRAVIS_BUILD_NUMBER") != null){
+//    buildVersion = System.getenv("TRAVIS_BUILD_NUMBER").trim().toInteger()
+//    version = cmdGetTagname.execute().text.trim()
+//}
+//else {
+//    buildVersion = cmdGetCommitNums.execute().text.trim().toInteger()
+//}
+//version = cmdGetTagname.execute().text.trim()
 
 apply plugin: 'com.google.gms.google-services'  // Google Services plugin
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion '29.0.3'
+    compileSdkVersion 30
+    buildToolsVersion '30.0.3'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -30,9 +29,9 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.hiroshi.cimoc"
+        applicationId "com.OnlyX"
         minSdkVersion 16
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode buildVersion
         versionName version
         resConfigs "en", "zh"
@@ -56,12 +55,9 @@ android {
         }
         android.applicationVariants.all { variant ->
             variant.outputs.all {
-                outputFileName = "Cimoc.apk"
+                outputFileName = "OnlyX.apk"
             }
         }
-    }
-    dexOptions {
-        additionalParameters = ["--minimal-main-dex"]
     }
 }
 
