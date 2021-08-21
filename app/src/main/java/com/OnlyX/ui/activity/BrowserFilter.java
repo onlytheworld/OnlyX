@@ -26,6 +26,7 @@ import com.OnlyX.source.PuFei;
 import com.OnlyX.source.Tencent;
 import com.OnlyX.source.TuHao;
 import com.OnlyX.source.U17;
+import com.OnlyX.source.JMTT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,7 @@ public class BrowserFilter extends BaseActivity {
         List<Integer> list = new ArrayList<>();
 
         list.add(Dmzjv2.TYPE);
+        list.add(JMTT.TYPE);
         list.add(BuKa.TYPE);
         list.add(PuFei.TYPE);
         list.add(Cartoonmad.TYPE);

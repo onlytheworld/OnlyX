@@ -328,6 +328,7 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -388,6 +389,7 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         mCurrentFragment.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {

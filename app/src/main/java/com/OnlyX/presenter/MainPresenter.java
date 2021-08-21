@@ -8,7 +8,6 @@ import com.OnlyX.rx.RxEvent;
 import com.OnlyX.ui.view.MainView;
 
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 
 /**
  * Created by Hiroshi on 2016/9/21.
@@ -25,13 +24,10 @@ public class MainPresenter extends BasePresenter<MainView> {
 
     @Override
     protected void initSubscription() {
-        addSubscription(RxEvent.EVENT_COMIC_READ, new Action1<RxEvent>() {
-            @Override
-            public void call(RxEvent rxEvent) {
-                MiniComic comic = (MiniComic) rxEvent.getData();
-                mBaseView.onLastChange(comic.getId(), comic.getSource(), comic.getCid(),
-                        comic.getTitle(), comic.getCover());
-            }
+        addSubscription(RxEvent.EVENT_COMIC_READ, rxEvent -> {
+            MiniComic comic = (MiniComic) rxEvent.getData();
+            mBaseView.onLastChange(comic.getId(), comic.getSource(), comic.getCid(),
+                    comic.getTitle(), comic.getCover());
         });
     }
 
@@ -43,35 +39,21 @@ public class MainPresenter extends BasePresenter<MainView> {
     public void loadLast() {
         mCompositeSubscription.add(mComicManager.loadLast()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<Comic>() {
-                    @Override
-                    public void call(Comic comic) {
-                        if (comic != null) {
-                            mBaseView.onLastLoadSuccess(comic.getId(), comic.getSource(), comic.getCid(), comic.getTitle(), comic.getCover());
-                        }
+                .subscribe(comic -> {
+                    if (comic != null) {
+                        mBaseView.onLastLoadSuccess(comic.getId(), comic.getSource(), comic.getCid(), comic.getTitle(), comic.getCover());
                     }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        mBaseView.onLastLoadFail();
-                    }
-                }));
+                }, throwable -> mBaseView.onLastLoadFail()));
     }
 
     public void checkUpdate(final String version) {
         mCompositeSubscription.add(Update.check()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<String>() {
-                    @Override
-                    public void call(String s) {
-                        if (-1 == version.indexOf(s) && -1 == version.indexOf("t")) {
-                            mBaseView.onUpdateReady();
-                        }
+                .subscribe(s -> {
+                    if (!version.contains(s) && !version.contains("t")) {
+                        mBaseView.onUpdateReady();
                     }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                    }
+                }, throwable -> {
                 }));
     }
 

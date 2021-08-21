@@ -11,6 +11,12 @@ Online manga reader based on Android
 > 项目迁移自 [project Cimoc](https://github.com/feilongfl/Cimoc)
 
 ## 进度
+- 解决了代码混淆时的报错问题
+
+- 解决了firebase-crashlytics打包时的报错问题
+
+- 删除了不必要的第三方依赖库和test
+
 - 更新了gradle版本
 
 - 更改了漫画的搜索、更新为多线程

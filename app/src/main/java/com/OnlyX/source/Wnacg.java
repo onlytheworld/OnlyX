@@ -1,10 +1,23 @@
 package com.OnlyX.source;
 
+import com.OnlyX.model.Chapter;
+import com.OnlyX.model.Comic;
+import com.OnlyX.model.ImageUrl;
+import com.OnlyX.parser.MangaParser;
+import com.OnlyX.parser.SearchIterator;
+import com.OnlyX.utils.StringUtils;
+
+import java.util.LinkedList;
+import java.util.List;
+import com.OnlyX.soup.Node;
+import com.OnlyX.parser.NodeIterator;
+
+import okhttp3.Request;
 /**
  * Created by Hiroshi on 2016/8/9.
  */
-public class Wnacg/* extends MangaParser */ {
-/*
+public class Wnacg extends MangaParser  {
+    public static final int TYPE = 77;
     @Override
     public Request getSearchRequest(String keyword, int page) {
         String url = StringUtils.format("https://www.wnacg.com/albums-index-page-%d-sname-%s.html", page, keyword);
@@ -13,6 +26,7 @@ public class Wnacg/* extends MangaParser */ {
 
     @Override
     public SearchIterator getSearchIterator(String html, int page) {
+
         Node body = new Node(html);
         return new NodeIterator(body.list("#bodywrap > div.grid > div > ul > li")) {
             @Override
@@ -24,7 +38,7 @@ public class Wnacg/* extends MangaParser */ {
                 String cover = node.attr("div.pic_box > a > img", "data-original");
                 String update = node.text("div.info > div.info_col");
                 update = StringUtils.match("\\d{4}-\\d{2}-\\d{2}", update, 0);
-                return new Comic(SourceManager.SOURCE_WNACG, cid, title, cover, update, author);
+                return new Comic(TYPE, cid, title, cover, update, author);
             }
         };
     }
@@ -56,7 +70,7 @@ public class Wnacg/* extends MangaParser */ {
         }
         return list;
     }
-
+/*
     @Override
     public Request getRecentRequest(int page) {
         String url = StringUtils.format("https://www.wnacg.com/albums-index-page-%d.html", page);
@@ -75,11 +89,11 @@ public class Wnacg/* extends MangaParser */ {
             String cover = node.attr("div.pic_box > a > img", "data-original");
             String update = node.text("div.info > div.info_col");
             update = StringUtils.match("\\d{4}-\\d{2}-\\d{2}", update, 0);
-            list.add(new Comic(SourceManager.SOURCE_WNACG, cid, title, cover, update, author));
+            list.add(new Comic(TYPE, cid, title, cover, update, author));
         }
         return list;
     }
-
+*/
     @Override
     public Request getImagesRequest(String cid, String path) {
         String url = StringUtils.format("https://www.wnacg.com/photos-index-page-%s-aid-%s.html", path, cid);
@@ -107,5 +121,5 @@ public class Wnacg/* extends MangaParser */ {
     public String parseLazy(String html, String url) {
         return new Node(html).attr("#picarea", "src");
     }
-*/
+
 }

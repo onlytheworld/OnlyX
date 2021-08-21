@@ -16,7 +16,7 @@ public class TagRefManager {
 
     private static TagRefManager mInstance;
 
-    private TagRefDao mRefDao;
+    private final TagRefDao mRefDao;
 
     private TagRefManager(AppGetter getter) {
         mRefDao = getter.getAppInstance().getDaoSession().getTagRefDao();

@@ -55,6 +55,7 @@ public class UpdateHelper {
         List<Source> list = new ArrayList<>();
         list.add(IKanman.getDefaultSource());
         list.add(Dmzj.getDefaultSource());
+        list.add(JMTT.getDefaultSource());
         list.add(HHAAZZ.getDefaultSource());
         list.add(CCTuku.getDefaultSource());
         list.add(U17.getDefaultSource());
