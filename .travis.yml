@@ -18,7 +18,7 @@ before_script:
   - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
   - chmod +x $TRAVIS_BUILD_DIR/install-jdk.sh
   - $TRAVIS_BUILD_DIR/install-jdk.sh -F 11 -L BCL
-  - jdk_switcher use openjdk11
+  - jdk_switcher use oraclejdk11
   - chmod +x gradlew
 script:
   #- export JAVA_HOME=$HOME/openjdk11
