@@ -11,6 +11,8 @@ Online manga reader based on Android
 > 项目迁移自 [project Cimoc](https://github.com/feilongfl/Cimoc)
 
 ## 进度
+- 更换了签名，可能不再与旧版兼容
+
 - 可能解决了报毒问题？（不太确定）
 
 - 去除了gms
