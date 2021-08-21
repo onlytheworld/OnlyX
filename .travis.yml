@@ -18,10 +18,10 @@ before_script:
   - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
   - chmod +x $TRAVIS_BUILD_DIR/install-jdk.sh
   - $TRAVIS_BUILD_DIR/install-jdk.sh -F 11 -L BCL
+  - export JAVA_HOME=$HOME/openjdk11
   # - jdk_switcher use oraclejdk11
   - chmod +x gradlew
 script:
-  #- export JAVA_HOME=$HOME/openjdk11
   #- "./gradlew assembleRelease"
   - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then ./gradlew assembleDebug; fi'
   - 'if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew assembleRelease; fi'
