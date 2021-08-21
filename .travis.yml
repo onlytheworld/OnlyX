@@ -8,23 +8,23 @@ android:
   - add-on
   - extra
 licenses:
-- android-sdk-license-.+
+  - android-sdk-license-.+
 before_install:
-- echo $TRAVIS_BUILD_NUMBER
-- yes | sdkmanager "platforms;android-30"
+  - echo $TRAVIS_BUILD_NUMBER
+  - yes | sdkmanager "platforms;android-30"
 jdk:
 - oraclejdk8
 before_script:
-- chmod +x gradlew
+  - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
+  - chmod +x $TRAVIS_BUILD_DIR/install-jdk.sh
+  - install-jdk.sh -F 11 -L BCL
+  - jdk_switcher use openjdk11
+  - chmod +x gradlew
 script:
-- jdk_switcher use openjdk8
-- # do stuff with OpenJDK 10
-- wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
-- chmod +x $TRAVIS_BUILD_DIR/install-jdk.sh
-- export JAVA_HOME=$HOME/openjdk11
-#- "./gradlew assembleRelease"
-- 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then ./gradlew assembleDebug; fi'
-- 'if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew assembleRelease; fi'
+  #- export JAVA_HOME=$HOME/openjdk11
+  #- "./gradlew assembleRelease"
+  - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then ./gradlew assembleDebug; fi'
+  - 'if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew assembleRelease; fi'
 before_deploy:
   - echo gitVersion
   - git rev-list --all --count

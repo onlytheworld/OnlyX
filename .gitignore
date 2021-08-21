@@ -27,7 +27,7 @@ captures/
 *.class
 
 *.hprof
-
+gradle.properties
 
 /gradle.properties
 /app/src/main/BrowserFilter-data.xml
