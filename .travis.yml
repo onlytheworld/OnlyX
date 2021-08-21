@@ -15,11 +15,9 @@ before_install:
 jdk:
 - oraclejdk8
 before_script:
-  - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
-  - chmod +x $TRAVIS_BUILD_DIR/install-jdk.sh
-  - $TRAVIS_BUILD_DIR/install-jdk.sh -F 11 -L BCL
-  - export JAVA_HOME=$HOME/openjdk11
-  # - jdk_switcher use oraclejdk11
+  - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh && . ./install-jdk.sh -F 11 -L GPL
+#  - export JAVA_HOME=$HOME/openjdk11
+#  - jdk_switcher use oraclejdk11
   - chmod +x gradlew
 script:
   #- "./gradlew assembleRelease"
