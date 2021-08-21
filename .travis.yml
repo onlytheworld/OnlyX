@@ -13,13 +13,13 @@ before_install:
 - echo $TRAVIS_BUILD_NUMBER
 - yes | sdkmanager "platforms;android-30"
 jdk:
-- oraclejdk11
+- oraclejdk8
 before_script:
 - chmod +x gradlew
 script:
-- jdk_switcher use openjdk8
-- export JAVA_HOME=$HOME/openjdk8
-- $TRAVIS_BUILD_DIR/install-jdk.sh --install openjdk8 --target $JAVA_HOME
+- jdk_switcher use openjdk10
+- export JAVA_HOME=$HOME/openjdk11
+- $TRAVIS_BUILD_DIR/install-jdk.sh --install openjdk11 --target $JAVA_HOME
 #- "./gradlew assembleRelease"
 - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then ./gradlew assembleDebug; fi'
 - 'if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew assembleRelease; fi'
