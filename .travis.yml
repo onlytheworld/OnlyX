@@ -3,8 +3,8 @@ android:
   components:
   - tools
   - platform-tools
-  - build-tools-30.0.3
-  - android-30
+  - build-tools-29.0.3
+  - android-29
   - add-on
   - extra
 licenses:
