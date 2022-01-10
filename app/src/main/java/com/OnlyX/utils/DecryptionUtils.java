@@ -1,19 +1,19 @@
 package com.OnlyX.utils;
 
+import android.os.Build;
 import android.util.Base64;
+
+import androidx.annotation.RequiresApi;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.security.Key;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.crypto.Cipher;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -21,16 +21,6 @@ import javax.crypto.spec.SecretKeySpec;
  * Created by Hiroshi on 2016/7/8.
  */
 public class DecryptionUtils {
-
-    public static String desDecrypt(String keyString, String cipherString) throws Exception {
-        byte[] cipherBytes = Base64.decode(cipherString, Base64.DEFAULT);
-        DESKeySpec keySpec = new DESKeySpec(keyString.getBytes());
-        Key key = SecretKeyFactory.getInstance("DES").generateSecret(keySpec);
-        Cipher cipher = Cipher.getInstance("DES");
-        cipher.init(Cipher.DECRYPT_MODE, key);
-        byte[] result = cipher.doFinal(cipherBytes);
-        return new String(result, "UTF-8");
-    }
 
     // ref: https://jueyue.iteye.com/blog/1830792
     public static String aesDecrypt(String value, String key, String ivs) throws Exception {
@@ -43,9 +33,10 @@ public class DecryptionUtils {
         return new String(cipher.doFinal(code));
     }
 
-    public static String base64Decrypt(String cipherString) throws UnsupportedEncodingException {
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    public static String base64Decrypt(String cipherString) {
         byte[] cipherBytes = Base64.decode(cipherString, Base64.DEFAULT);
-        return new String(cipherBytes, "UTF-8");
+        return new String(cipherBytes, StandardCharsets.UTF_8);
     }
 
     public static String evalDecrypt(String jsCode) {
@@ -63,9 +54,9 @@ public class DecryptionUtils {
             Object jsObject = scope.get(varName, scope);
 //            return String.join(",",(List<String>)jsObject);
             //这个竟然需要api26，喵喵喵??
-            String resault = "";
+            StringBuilder resault = new StringBuilder();
             for (String s : (List<String>) jsObject) {
-                resault += (s + ',');
+                resault.append(s).append(',');
             }
             return resault.substring(0, resault.length() - 1);
             //我也不想这么写😭

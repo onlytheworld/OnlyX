@@ -15,10 +15,6 @@ public class PreCacheLayoutManager extends LinearLayoutManager {
         super(context);
     }
 
-    public PreCacheLayoutManager(Context context, int orientation, boolean reverseLayout) {
-        super(context, orientation, reverseLayout);
-    }
-
     public void setExtraSpace(int extraSpace) {
         mExtraSpace = extraSpace;
     }

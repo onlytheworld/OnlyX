@@ -8,7 +8,6 @@ import com.OnlyX.R;
 import com.OnlyX.manager.PreferenceManager;
 import com.OnlyX.misc.NotificationWrapper;
 import com.OnlyX.model.MiniComic;
-import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.presenter.FavoritePresenter;
 import com.OnlyX.ui.fragment.dialog.MessageDialogFragment;
 import com.OnlyX.ui.view.FavoriteView;
@@ -35,7 +34,7 @@ public class FavoriteFragment extends GridFragment implements FavoriteView {
     private NotificationWrapper mNotification;
 
     @Override
-    protected BasePresenter initPresenter() {
+    protected FavoritePresenter initPresenter() {
         mPresenter = new FavoritePresenter();
         mPresenter.attachView(this);
         return mPresenter;
@@ -73,7 +72,7 @@ public class FavoriteFragment extends GridFragment implements FavoriteView {
                         MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.dialog_confirm,
                                 R.string.favorite_delete_confirm, true, DIALOG_REQUEST_DELETE);
                         fragment.setTargetFragment(this, 0);
-                        fragment.show(getFragmentManager(), null);
+                        fragment.show(requireActivity().getSupportFragmentManager(), null);
                         break;
                 }
                 break;
@@ -81,7 +80,7 @@ public class FavoriteFragment extends GridFragment implements FavoriteView {
                 checkUpdate();
                 break;
             case DIALOG_REQUEST_DELETE:
-                mPresenter.unfavoriteComic(mSavedId);
+                mPresenter.deleteFavoriteComic(mSavedId);
                 HintUtils.showToast(getActivity(), R.string.common_execute_success);
                 break;
         }
@@ -95,7 +94,7 @@ public class FavoriteFragment extends GridFragment implements FavoriteView {
     private void checkUpdate() {
         if (mNotification == null) {
             mPresenter.checkUpdate();
-            mNotification = new NotificationWrapper(getActivity(), NOTIFICATION_CHECK_UPDATE,
+            mNotification = new NotificationWrapper(requireActivity(), NOTIFICATION_CHECK_UPDATE,
                     R.drawable.ic_sync_white_24dp, true);
             mNotification.post(getString(R.string.favorite_check_update_doing), 0, 0);
         } else {
@@ -111,14 +110,14 @@ public class FavoriteFragment extends GridFragment implements FavoriteView {
         MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.dialog_confirm,
                 R.string.favorite_check_update_confirm, true, DIALOG_REQUEST_UPDATE);
         fragment.setTargetFragment(this, 0);
-        fragment.show(getFragmentManager(), null);
+        fragment.show(requireActivity().getSupportFragmentManager(), null);
     }
 
     @Override
     public void onComicLoadSuccess(List<MiniComic> list) {
         super.onComicLoadSuccess(list);
         WifiManager manager =
-                (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                (WifiManager) requireActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (manager.isWifiEnabled() &&
                 mPreference.getBoolean(PreferenceManager.PREF_OTHER_CHECK_UPDATE, false)) {
             Calendar calendar = Calendar.getInstance();
@@ -163,6 +162,7 @@ public class FavoriteFragment extends GridFragment implements FavoriteView {
 
     @Override
     public void onComicCheckComplete() {
+        HintUtils.showToast(getActivity(), R.string.favorite_check_update_done);
         mNotification.post(getString(R.string.favorite_check_update_done), false);
         mNotification.cancel();
         mNotification = null;

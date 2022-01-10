@@ -1,6 +1,9 @@
 package com.OnlyX.source;
 
+import android.os.Build;
 import android.util.Base64;
+
+import androidx.annotation.RequiresApi;
 
 import com.google.common.collect.Lists;
 import com.OnlyX.model.Chapter;
@@ -18,10 +21,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,28 +44,28 @@ public class MiGu extends MangaParser {
 
     public static final int TYPE = 58;
     public static final String DEFAULT_TITLE = "咪咕漫画";
-    private String _cid, _path;
 
     public MiGu(Source source) {
         init(source, null);
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public Request getSearchRequest(String keyword, int page) throws UnsupportedEncodingException {
         //这编码牛逼,不认识...
         //天 => JUU1JUE0JUE5
         //好吧,搞出来了
         //天 ===utf-8===> \xE5\xA4\xA9 ===\x->%=====> %E5%A1%A9 ===base64=====> JUU1JUE0JUE5
-        byte[] keywordByte = keyword.getBytes(Charset.forName("UTF-8"));
-        String keyPre = "";
+        byte[] keywordByte = keyword.getBytes(StandardCharsets.UTF_8);
+        StringBuilder keyPre = new StringBuilder();
         for (byte k : keywordByte) {
-            keyPre += "%" + String.format("%02x", k);
+            keyPre.append("%").append(String.format("%02x", k));
         }
-        String keywordconv = Base64.encodeToString(keyPre.toUpperCase().getBytes(), keyPre.length()).trim();
+        String keywordconv = Base64.encodeToString(keyPre.toString().toUpperCase().getBytes(), keyPre.length()).trim();
         String url = StringUtils.format("http://www.migudm.cn/search/result/list.html?hintKey=%s&hintType=2&pageSize=30&pageNo=%d",
                 keywordconv,
                 page);
@@ -103,8 +107,7 @@ public class MiGu extends MangaParser {
 //        String update = body.text("span.date").trim();
 //        String author = body.text("p.author").trim();
         String intro = body.text("#worksDesc").trim();
-        boolean status = false;
-        comic.setInfo(title, cover, "", intro, "", status);
+        comic.setInfo(title, cover, "", intro, "", false);
     }
 
     @Override
@@ -127,7 +130,7 @@ public class MiGu extends MangaParser {
         Call call = okHttpClient.newCall(request);
         try {
             Response response = call.execute();
-            return response.body().string();
+            return Objects.requireNonNull(response.body()).string();
         } catch (Exception ex) {
             return "";
         }
@@ -135,13 +138,11 @@ public class MiGu extends MangaParser {
 
     @Override
     public Request getImagesRequest(String cid, String path) {
-        _cid = cid;
-        _path = path;
         String url = StringUtils.format("http://www.migudm.cn/%s/chapter/%s.html", cid, path);
         String html = httpGet(url);
         Matcher m = Pattern.compile("<input type=\"hidden\" id=\"playUrl\" value=\"(.*)\">").matcher(html);
         if (m.find()) {
-            url = "http://www.migudm.cn/opus/webQueryWatchOpusInfo.html?".concat(m.group(1));
+            url = "http://www.migudm.cn/opus/webQueryWatchOpusInfo.html?".concat(Objects.requireNonNull(m.group(1)));
             return new Request.Builder().url(url).build();
         }
         return null;

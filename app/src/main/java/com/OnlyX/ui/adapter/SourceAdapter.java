@@ -4,13 +4,14 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Rect;
-import androidx.annotation.ColorInt;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.SwitchCompat;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.TextView;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.OnlyX.R;
 import com.OnlyX.model.Source;
@@ -33,25 +34,23 @@ public class SourceAdapter extends BaseAdapter<Source> {
         super(context, list);
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.item_source, parent, false);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = inflate(R.layout.item_source, parent, false);
         return new SourceHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        Source source = mDataSet.get(position);
+        Source source = get(position);
         final SourceHolder viewHolder = (SourceHolder) holder;
         viewHolder.sourceTitle.setText(source.getTitle());
         viewHolder.sourceSwitch.setChecked(source.getEnable());
-        viewHolder.sourceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (mOnItemCheckedListener != null) {
-                    mOnItemCheckedListener.onItemCheckedListener(isChecked, viewHolder.getAdapterPosition());
-                }
+        viewHolder.sourceSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (mOnItemCheckedListener != null) {
+                mOnItemCheckedListener.onItemCheckedListener(isChecked, viewHolder.getAdapterPosition());
             }
         });
         if (color != -1) {
@@ -68,7 +67,7 @@ public class SourceAdapter extends BaseAdapter<Source> {
     public RecyclerView.ItemDecoration getItemDecoration() {
         return new RecyclerView.ItemDecoration() {
             @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
                 int offset = parent.getWidth() / 90;
                 outRect.set(offset, 0, offset, (int) (offset * 1.5));
             }

@@ -6,7 +6,7 @@ package com.OnlyX.misc;
 
 public class Switcher<T> {
 
-    private T element;
+    private final T element;
     private boolean enable;
 
     public Switcher(T element, boolean enable) {
@@ -16,10 +16,6 @@ public class Switcher<T> {
 
     public T getElement() {
         return element;
-    }
-
-    public void setElement(T element) {
-        this.element = element;
     }
 
     public boolean isEnable() {

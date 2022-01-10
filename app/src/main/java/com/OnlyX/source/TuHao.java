@@ -12,10 +12,12 @@ import com.OnlyX.soup.Node;
 import com.OnlyX.utils.StringUtils;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -29,7 +31,7 @@ public class TuHao extends MangaParser {
     public static final String website = "tuhao456.com";
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     public TuHao(Source source) {
@@ -115,7 +117,7 @@ public class TuHao extends MangaParser {
         String str = StringUtils.match("\"page_url\":\"(.*?)\",", html, 1);
 
         int i = 0;
-        for(String url : str.split("\\|72cms\\|")) {
+        for(String url : Objects.requireNonNull(str).split("\\|72cms\\|")) {
             list.add(new ImageUrl(i + 1, url, false));
         }
 
@@ -132,7 +134,7 @@ public class TuHao extends MangaParser {
         // 这里表示的是更新时间
         Node body = new Node(html);
 
-        String update = "";
+        String update;
         List<Node> upDateAndAuth = body.list("div.detailForm > div > div > p");
 
         if (upDateAndAuth.size() == 5) {
@@ -144,8 +146,10 @@ public class TuHao extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "https://m.tohomh456.com");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "https://m.tohomh456.com");
+        return headers;
     }
 
 }

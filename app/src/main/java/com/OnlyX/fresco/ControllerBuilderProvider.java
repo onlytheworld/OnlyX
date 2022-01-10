@@ -3,28 +3,28 @@ package com.OnlyX.fresco;
 import android.content.Context;
 import android.util.SparseArray;
 
+import com.OnlyX.manager.SourceManager;
 import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilder;
 import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilderSupplier;
 import com.facebook.imagepipeline.core.ImagePipeline;
 import com.facebook.imagepipeline.core.ImagePipelineFactory;
-import com.OnlyX.manager.SourceManager;
 
 /**
  * Created by Hiroshi on 2016/9/5.
  */
 public class ControllerBuilderProvider {
 
-    private Context mContext;
-    private SparseArray<PipelineDraweeControllerBuilderSupplier> mSupplierArray;
-    private SparseArray<ImagePipeline> mPipelineArray;
-    private SourceManager.HeaderGetter mHeaderGetter;
-    private boolean mCover;
+    private final Context mContext;
+    private final boolean mCover;
+    private final SourceManager.SMGetter mSMGetter;
+    private final SparseArray<ImagePipeline> mPipelineArray;
+    private final SparseArray<PipelineDraweeControllerBuilderSupplier> mSupplierArray;
 
-    public ControllerBuilderProvider(Context context, SourceManager.HeaderGetter getter, boolean cover) {
+    public ControllerBuilderProvider(Context context, SourceManager.SMGetter getter, boolean cover) {
         mSupplierArray = new SparseArray<>();
         mPipelineArray = new SparseArray<>();
         mContext = context;
-        mHeaderGetter = getter;
+        mSMGetter = getter;
         mCover = cover;
     }
 
@@ -32,7 +32,7 @@ public class ControllerBuilderProvider {
         PipelineDraweeControllerBuilderSupplier supplier = mSupplierArray.get(type);
         if (supplier == null) {
             ImagePipelineFactory factory = ImagePipelineFactoryBuilder
-                    .build(mContext, type < 0 ? null : mHeaderGetter.getHeader(type), mCover);
+                    .build(mContext, mSMGetter.getHeader(type), mCover);
             supplier = ControllerBuilderSupplierFactory.get(mContext, factory);
             mSupplierArray.put(type, supplier);
             mPipelineArray.put(type, factory.getImagePipeline());

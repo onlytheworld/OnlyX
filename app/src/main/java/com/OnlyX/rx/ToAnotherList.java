@@ -11,7 +11,7 @@ import rx.functions.Func1;
 
 public class ToAnotherList<T, R> implements Observable.Transformer<List<T>, List<R>> {
 
-    private Func1<T, R> func;
+    private final Func1<T, R> func;
 
     public ToAnotherList(Func1<T, R> func) {
         this.func = func;
@@ -19,12 +19,7 @@ public class ToAnotherList<T, R> implements Observable.Transformer<List<T>, List
 
     @Override
     public Observable<List<R>> call(Observable<List<T>> observable) {
-        return observable.flatMap(new Func1<List<T>, Observable<T>>() {
-            @Override
-            public Observable<T> call(List<T> list) {
-                return Observable.from(list);
-            }
-        }).map(func).toList();
+        return observable.flatMap((Func1<List<T>, Observable<T>>) Observable::from).map(func).toList();
     }
 
 }

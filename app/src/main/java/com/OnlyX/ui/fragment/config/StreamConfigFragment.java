@@ -1,5 +1,6 @@
 package com.OnlyX.ui.fragment.config;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,7 +13,6 @@ import com.OnlyX.manager.PreferenceManager;
 import com.OnlyX.ui.activity.settings.EventSettingsActivity;
 import com.OnlyX.ui.fragment.BaseFragment;
 import com.OnlyX.ui.fragment.dialog.ChoiceDialogFragment;
-import com.OnlyX.ui.fragment.dialog.ItemDialogFragment;
 import com.OnlyX.ui.widget.preference.CheckBoxPreference;
 import com.OnlyX.ui.widget.preference.ChoicePreference;
 
@@ -32,14 +32,19 @@ public class StreamConfigFragment extends BaseFragment implements DialogCaller {
     private static final int OPERATION_VOLUME_UP = 0;
     private static final int OPERATION_VOLUME_DOWN = 1;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_interval)
     CheckBoxPreference mReaderInterval;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_load_prev)
     CheckBoxPreference mReaderLoadPrev;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_load_next)
     CheckBoxPreference mReaderLoadNext;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_orientation)
     ChoicePreference mReaderOrientation;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_turn)
     ChoicePreference mReaderTurn;
 
@@ -55,9 +60,9 @@ public class StreamConfigFragment extends BaseFragment implements DialogCaller {
         mReaderInterval.bindPreference(PreferenceManager.PREF_READER_STREAM_INTERVAL, false);
         mReaderLoadPrev.bindPreference(PreferenceManager.PREF_READER_STREAM_LOAD_PREV, false);
         mReaderLoadNext.bindPreference(PreferenceManager.PREF_READER_STREAM_LOAD_NEXT, true);
-        mReaderOrientation.bindPreference(getFragmentManager(), this, PreferenceManager.PREF_READER_STREAM_ORIENTATION,
+        mReaderOrientation.bindPreference(requireActivity().getSupportFragmentManager(), this, PreferenceManager.PREF_READER_STREAM_ORIENTATION,
                 PreferenceManager.READER_ORIENTATION_AUTO, R.array.reader_orientation_items, DIALOG_REQUEST_ORIENTATION);
-        mReaderTurn.bindPreference(getFragmentManager(), this, PreferenceManager.PREF_READER_STREAM_TURN,
+        mReaderTurn.bindPreference(requireActivity().getSupportFragmentManager(), this, PreferenceManager.PREF_READER_STREAM_TURN,
                 PreferenceManager.READER_TURN_LTR, R.array.reader_turn_items, DIALOG_REQUEST_TURN);
     }
 
@@ -84,7 +89,7 @@ public class StreamConfigFragment extends BaseFragment implements DialogCaller {
             Context context = this.getContext();
             ChoiceDialogFragment fragment = ChoiceDialogFragment.newInstance(R.string.event_select,
                     ClickEvents.getEventTitleArray(context), mChoiceArray[index], index);
-            fragment.show(getFragmentManager(), null);
+            fragment.show(requireActivity().getSupportFragmentManager(), null);
         }
     }
 

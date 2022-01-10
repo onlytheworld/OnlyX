@@ -18,7 +18,7 @@ public class TaskManager {
 
     private static TaskManager mInstance;
 
-    private TaskDao mTaskDao;
+    private final TaskDao mTaskDao;
 
     private TaskManager(AppGetter getter) {
         mTaskDao = getter.getAppInstance().getDaoSession().getTaskDao();
@@ -37,12 +37,6 @@ public class TaskManager {
 
     public List<Task> list() {
         return mTaskDao.queryBuilder().list();
-    }
-
-    public List<Task> listValid() {
-        return mTaskDao.queryBuilder()
-                .where(Properties.Max.notEq(0))
-                .list();
     }
 
     public List<Task> list(long key) {
@@ -85,10 +79,6 @@ public class TaskManager {
         mTaskDao.deleteByKey(id);
     }
 
-    public void deleteInTx(Iterable<Task> entities) {
-        mTaskDao.deleteInTx(entities);
-    }
-
     public void deleteByComicId(long id) {
         mTaskDao.queryBuilder()
                 .where(Properties.Key.eq(id))
@@ -97,15 +87,12 @@ public class TaskManager {
     }
 
     public void insertIfNotExist(final Iterable<Task> entities) {
-        mTaskDao.getSession().runInTx(new Runnable() {
-            @Override
-            public void run() {
-                for (Task task : entities) {
-                    QueryBuilder<Task> builder = mTaskDao.queryBuilder()
-                            .where(Properties.Key.eq(task.getKey()), Properties.Path.eq(task.getPath()));
-                    if (builder.unique() == null) {
-                        mTaskDao.insert(task);
-                    }
+        mTaskDao.getSession().runInTx(() -> {
+            for (Task task : entities) {
+                QueryBuilder<Task> builder = mTaskDao.queryBuilder()
+                        .where(Properties.Key.eq(task.getKey()), Properties.Path.eq(task.getPath()));
+                if (builder.unique() == null) {
+                    mTaskDao.insert(task);
                 }
             }
         });

@@ -20,7 +20,7 @@ import java.util.List;
 
 class RawDocumentFile extends DocumentFile {
 
-    private File mFile;
+    private final File mFile;
 
     RawDocumentFile(DocumentFile parent, File file) {
         super(parent);
@@ -119,19 +119,9 @@ class RawDocumentFile extends DocumentFile {
     }
 
     @Override
-    public boolean canWrite() {
-        return mFile.canWrite();
-    }
-
-    @Override
     public boolean delete() {
         deleteContents(mFile);
         return mFile.delete();
-    }
-
-    @Override
-    public boolean exists() {
-        return mFile.exists();
     }
 
     @Override
@@ -160,6 +150,7 @@ class RawDocumentFile extends DocumentFile {
     @Override
     public DocumentFile[] listFiles() {
         final File[] files = mFile.listFiles();
+        assert files != null;
         final DocumentFile[] results = new DocumentFile[files.length];
         for (int i = 0; i < files.length; ++i) {
             results[i] = new RawDocumentFile(this, files[i]);
@@ -179,17 +170,6 @@ class RawDocumentFile extends DocumentFile {
             }
         }
         return null;
-    }
-
-    @Override
-    public boolean renameTo(String displayName) {
-        final File target = new File(mFile.getParentFile(), displayName);
-        if (mFile.renameTo(target)) {
-            mFile = target;
-            return true;
-        } else {
-            return false;
-        }
     }
 
 }

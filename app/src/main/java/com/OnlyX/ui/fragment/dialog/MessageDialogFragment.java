@@ -1,10 +1,12 @@
 package com.OnlyX.ui.fragment.dialog;
 
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 
 import com.OnlyX.R;
 import com.OnlyX.component.DialogCaller;
@@ -37,17 +39,18 @@ public class MessageDialogFragment extends DialogFragment implements DialogInter
         return fragment;
     }
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        String content = getArguments().getString(DialogCaller.EXTRA_DIALOG_CONTENT_TEXT);
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        String content = requireArguments().getString(DialogCaller.EXTRA_DIALOG_CONTENT_TEXT);
         if (content == null) {
-            content = getString(getArguments().getInt(DialogCaller.EXTRA_DIALOG_CONTENT));
+            content = getString(requireArguments().getInt(DialogCaller.EXTRA_DIALOG_CONTENT));
         }
-        builder.setTitle(getArguments().getInt(DialogCaller.EXTRA_DIALOG_TITLE))
+        builder.setTitle(requireArguments().getInt(DialogCaller.EXTRA_DIALOG_TITLE))
                 .setMessage(content)
                 .setPositiveButton(R.string.dialog_positive, this);
-        if (getArguments().getBoolean(DialogCaller.EXTRA_DIALOG_NEGATIVE, false)) {
+        if (requireArguments().getBoolean(DialogCaller.EXTRA_DIALOG_NEGATIVE, false)) {
             setCancelable(true);
             builder.setNegativeButton(R.string.dialog_negative, null);
         } else {
@@ -58,8 +61,8 @@ public class MessageDialogFragment extends DialogFragment implements DialogInter
 
     @Override
     public void onClick(DialogInterface dialogInterface, int which) {
-        int requestCode = getArguments().getInt(DialogCaller.EXTRA_DIALOG_REQUEST_CODE);
-        DialogCaller target = (DialogCaller) (getTargetFragment() != null ? getTargetFragment() : getActivity());
+        int requestCode = requireArguments().getInt(DialogCaller.EXTRA_DIALOG_REQUEST_CODE);
+        DialogCaller target = (DialogCaller) (getTargetFragment() != null ? getTargetFragment() : requireActivity());
         target.onDialogResult(requestCode, null);
     }
 

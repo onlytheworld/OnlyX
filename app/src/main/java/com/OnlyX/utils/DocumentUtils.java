@@ -74,7 +74,7 @@ public class DocumentUtils {
                 }
             }
         }
-        return list.toArray(new String[list.size()]);
+        return list.toArray(new String[0]);
     }
 
     public static DocumentFile getOrCreateSubDirectory(DocumentFile parent, String displayName) {

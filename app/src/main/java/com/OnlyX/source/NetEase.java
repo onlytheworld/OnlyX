@@ -16,10 +16,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 //import com.google.gson.JsonObject;
@@ -163,8 +164,10 @@ public class NetEase extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "https://h5.manhua.163.com");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "https://h5.manhua.163.com");
+        return headers;
     }
 
 }

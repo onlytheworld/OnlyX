@@ -1,12 +1,9 @@
 package com.OnlyX.source;
 
-import android.util.Pair;
-
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
 import com.OnlyX.model.Source;
-import com.OnlyX.parser.MangaCategory;
 import com.OnlyX.parser.MangaParser;
 import com.OnlyX.parser.NodeIterator;
 import com.OnlyX.parser.SearchIterator;
@@ -14,9 +11,10 @@ import com.OnlyX.soup.Node;
 import com.OnlyX.utils.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -29,11 +27,11 @@ public class HHSSEE extends MangaParser {
     public static final String DEFAULT_TITLE = "汗汗漫画";
 
     public HHSSEE(Source source) {
-        init(source, new Category());
+        init(source, null);
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -186,62 +184,64 @@ public class HHSSEE extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://www.hhmmoo.com");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://www.hhmmoo.com");
+        return headers;
     }
-
-    private static class Category extends MangaCategory {
-        @Override
-        public String getFormat(String... args) {
-            if (!"".equals(args[CATEGORY_SUBJECT])) {
-                return StringUtils.format("http://www.hhmmoo.com/comic/class_%s/%%d.html", args[CATEGORY_SUBJECT]);
-            } else if (!"".equals(args[CATEGORY_AREA])) {
-                return StringUtils.format("http://www.hhmmoo.com/comic/class_%s/%%d.html", args[CATEGORY_AREA]);
-            } else {
-                return "http://www.hhmmoo.com/comic/%d.html";
-            }
-        }
-
-        @Override
-        protected List<Pair<String, String>> getSubject() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("萌系", "1"));
-            list.add(Pair.create("搞笑", "2"));
-            list.add(Pair.create("格斗", "3"));
-            list.add(Pair.create("科幻", "4"));
-            list.add(Pair.create("剧情", "5"));
-            list.add(Pair.create("侦探", "6"));
-            list.add(Pair.create("竞技", "7"));
-            list.add(Pair.create("魔法", "8"));
-            list.add(Pair.create("神鬼", "9"));
-            list.add(Pair.create("校园", "10"));
-            list.add(Pair.create("惊栗", "11"));
-            list.add(Pair.create("厨艺", "12"));
-            list.add(Pair.create("伪娘", "13"));
-            list.add(Pair.create("冒险", "15"));
-            list.add(Pair.create("小说", "19"));
-            list.add(Pair.create("耽美", "21"));
-            list.add(Pair.create("经典", "22"));
-            list.add(Pair.create("亲情", "25"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasArea() {
-            return true;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getArea() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("香港", "20"));
-            list.add(Pair.create("欧美", "23"));
-            list.add(Pair.create("日文", "24"));
-            return list;
-        }
-
-    }
+//
+//    private static class Category extends MangaCategory {
+//        @Override
+//        public String getFormat(String... args) {
+//            if (!"".equals(args[CATEGORY_SUBJECT])) {
+//                return StringUtils.format("http://www.hhmmoo.com/comic/class_%s/%%d.html", args[CATEGORY_SUBJECT]);
+//            } else if (!"".equals(args[CATEGORY_AREA])) {
+//                return StringUtils.format("http://www.hhmmoo.com/comic/class_%s/%%d.html", args[CATEGORY_AREA]);
+//            } else {
+//                return "http://www.hhmmoo.com/comic/%d.html";
+//            }
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getSubject() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("萌系", "1"));
+//            list.add(Pair.create("搞笑", "2"));
+//            list.add(Pair.create("格斗", "3"));
+//            list.add(Pair.create("科幻", "4"));
+//            list.add(Pair.create("剧情", "5"));
+//            list.add(Pair.create("侦探", "6"));
+//            list.add(Pair.create("竞技", "7"));
+//            list.add(Pair.create("魔法", "8"));
+//            list.add(Pair.create("神鬼", "9"));
+//            list.add(Pair.create("校园", "10"));
+//            list.add(Pair.create("惊栗", "11"));
+//            list.add(Pair.create("厨艺", "12"));
+//            list.add(Pair.create("伪娘", "13"));
+//            list.add(Pair.create("冒险", "15"));
+//            list.add(Pair.create("小说", "19"));
+//            list.add(Pair.create("耽美", "21"));
+//            list.add(Pair.create("经典", "22"));
+//            list.add(Pair.create("亲情", "25"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasArea() {
+//            return true;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getArea() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("香港", "20"));
+//            list.add(Pair.create("欧美", "23"));
+//            list.add(Pair.create("日文", "24"));
+//            return list;
+//        }
+//
+//    }
 
 }

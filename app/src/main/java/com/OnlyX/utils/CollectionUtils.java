@@ -12,12 +12,6 @@ import rx.functions.Func1;
 
 public class CollectionUtils {
 
-    public static <E> Collection<E> minus(Collection<E> lhs, Collection<E> rhs) {
-        Collection<E> collection = new ArrayList<>(lhs);
-        lhs.removeAll(rhs);
-        return collection;
-    }
-
     public static <T, R> List<R> map(Collection<T> origin, Func1<T, R> func) {
         List<R> result = new ArrayList<>(origin.size());
         for (T element : origin) {

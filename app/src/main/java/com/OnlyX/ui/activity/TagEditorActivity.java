@@ -1,5 +1,6 @@
 package com.OnlyX.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.view.View;
@@ -43,7 +44,7 @@ public class TagEditorActivity extends CoordinatorActivity implements TagEditorV
 
     @Override
     protected BaseAdapter initAdapter() {
-        mTagAdapter = new TagEditorAdapter(this, new ArrayList<Switcher<Tag>>());
+        mTagAdapter = new TagEditorAdapter(this, new ArrayList<>());
         return mTagAdapter;
     }
 
@@ -55,7 +56,7 @@ public class TagEditorActivity extends CoordinatorActivity implements TagEditorV
     }
 
     @Override
-    protected void initData() {
+    protected void initView() {
         long id = getIntent().getLongExtra(Extra.EXTRA_ID, -1);
         mPresenter.load(id);
     }
@@ -91,6 +92,7 @@ public class TagEditorActivity extends CoordinatorActivity implements TagEditorV
         mTagAdapter.notifyItemChanged(position);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.coordinator_action_button)
     void onActionButtonClick() {
         showProgressDialog();

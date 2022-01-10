@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">OnlyX</string>
+    <string name="app_name" translatable="false">OnlyX</string>
 
     <string name="drawer_comic">漫画</string>
     <string name="drawer_source">图源</string>
@@ -29,6 +29,7 @@
     <string name="search_source_select">图源选择</string>
     <string name="search_source_none">未选择图源</string>
     <string name="search_source_load_fail">读取图源失败</string>
+    <string name="search_select_all">全选</string>
 
     <string name="result">搜索结果</string>
     <string name="result_empty">搜索结果为空</string>
@@ -166,6 +167,9 @@
     <string name="settings_search_auto_complete">开启搜索提示</string>
     <string name="settings_search_auto_complete_summary">根据输入的关键字弹出提示</string>
     <string name="settings_other">应用设置</string>
+    <string name="settings_import_source">导入漫源</string>
+    <string name="settings_import_source_success">导入漫源成功</string>
+    <string name="settings_import_source_fail">导入漫源失败</string>
     <string name="settings_reader_show_topbar">显示通知栏</string>
     <string name="settings_reader_show_topbar_summary">阅读界面显示通知栏</string>
     <string name="settings_other_connect_only_wifi">仅WiFi联网</string>
@@ -202,6 +206,9 @@
     <string name="backup_restore_comic_summary">恢复收藏和历史漫画</string>
     <string name="backup_restore_tag">恢复标签</string>
     <string name="backup_restore_tag_summary">恢复标签及相应漫画</string>
+    <string name="backup_delete">删除</string>
+    <string name="backup_delete_all">删除备份</string>
+    <string name="backup_delete_all_summary">删除本地的所有备份</string>
     <string name="backup_cloud">云端</string>
     <string name="backup_cloud_restore_tag">从云端恢复</string>
     <string name="backup_cloud_restore_tag_summary">从云端恢复收藏的漫画</string>
@@ -215,21 +222,21 @@
     <string name="backup_restore_settings_summary">恢复所有个人配置</string>
 
     <string name="home_page">主页</string>
-    <string name="home_page_url">https://github.com/onlytheworld/OnlyX</string>
+    <string name="home_page_url" translatable="false">https://github.com/onlytheworld/OnlyX</string>
     <string name="home_page_cimqus">Cimqus</string>
-    <string name="home_page_cimqus_url">https://cimqus.now.sh</string>
+    <string name="home_page_cimqus_url" translatable="false">https://cimqus.now.sh</string>
     <string name="home_page_gitter">Gitter</string>
-    <string name="home_page_gitter_url">https://gitter.im/onlytheworld/Lobby</string>
+    <string name="home_page_gitter_url" translatable="false">https://gitter.im/onlytheworld/Lobby</string>
     <string name="home_page_comiclist">Comiclist</string>
-    <string name="home_page_comiclist_url">https://onlyx.netlify.com/</string>
+    <string name="home_page_comiclist_url" translatable="false">https://onlyx.netlify.com/</string>
     <string name="about_resource">源代码</string>
-    <string name="about_resource_url">https://github.com/onlytheworld/OnlyX</string>
+    <string name="about_resource_url" translatable="false">https://github.com/onlytheworld/OnlyX</string>
     <string name="about_resource_ori">原作仓库</string>
-    <string name="about_resource_ori_url">https://github.com/feilongfl/Cimoc</string>
+    <string name="about_resource_ori_url" translatable="false">https://github.com/feilongfl/Cimoc</string>
     <string name="about_support">意见反馈</string>
-    <string name="about_support_url">https://github.com/onlytheworld/OnlyX/issues</string>
+    <string name="about_support_url" translatable="false">https://github.com/onlytheworld/OnlyX/issues</string>
     <string name="about_update">检查更新</string>
-    <string name="about_update_url">https://github.com/onlytheworld/OnlyX/releases</string>
+    <string name="about_update_url" translatable="false">https://github.com/onlytheworld/OnlyX/releases</string>
     <string name="about_update_summary">点击访问Github Releases页面</string>
     <string name="about_update_app_auto">自动检查更新APP</string>
     <string name="about_update_latest">当前已经是最新版本</string>
@@ -292,7 +299,7 @@
     <string name="common_execute_fail">操作失败</string>
     <string name="common_operation_select">操作选择</string>
     <string name="common_null">null</string>
-    <string name="about_version">落雪</string>
+    <string name="about_version">落雪霜林</string>
     <string name="detail_disqus">评论</string>
 
     <!--登陆相关-->
@@ -301,6 +308,8 @@
     <string name="title_activity_login">Users</string>
     <string name="user_login_tips">请登录</string>
     <string name="user_login_item">登录</string>
+    <string name="user_login_username">用户名</string>
+    <string name="user_login_passwd">密码</string>
     <string name="user_login_failed">登陆失败</string>
     <string name="user_login_sucess">登陆成功</string>
     <string name="user_login_logout_sucess">注销成功</string>
@@ -314,5 +323,14 @@
     <string name="mongo_comic_chapter">comic-chapter</string>
 
     <string name="developing">此功能正在开发中</string>
+    <!-- Strings related to login -->
+    <string name="prompt_email">用户名</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome!"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
 
 </resources>

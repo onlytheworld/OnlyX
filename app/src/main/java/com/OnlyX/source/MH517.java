@@ -14,12 +14,13 @@ import com.OnlyX.utils.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -36,7 +37,7 @@ public class MH517 extends MangaParser {
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -72,7 +73,7 @@ public class MH517 extends MangaParser {
 
     @Override
     public Request getInfoRequest(String cid) {
-        if (cid.indexOf("http://m.517manhua.com") == -1) {
+        if (!cid.contains("http://m.517manhua.com")) {
             cid = "http://m.517manhua.com".concat(cid);
         }
         return new Request.Builder().url(cid).build();
@@ -86,8 +87,7 @@ public class MH517 extends MangaParser {
         String update = "";
         String author = "";
         String intro = body.text("p.txtDesc");
-        boolean status = false;
-        comic.setInfo(title, cover, update, intro, author, status);
+        comic.setInfo(title, cover, update, intro, author, false);
     }
 
     @Override
@@ -132,8 +132,10 @@ public class MH517 extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://m.517manhua.com/");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://m.517manhua.com/");
+        return headers;
     }
 
 }

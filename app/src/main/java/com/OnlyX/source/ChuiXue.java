@@ -13,10 +13,11 @@ import com.OnlyX.utils.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -29,7 +30,7 @@ public class ChuiXue extends MangaParser {
     public static final String DEFAULT_TITLE = "吹雪漫画";
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     public ChuiXue(Source source) {
@@ -146,10 +147,11 @@ public class ChuiXue extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
+    public Map<String, String> getHeader() {
         String referer = StringUtils.format("http://www.chuixue.net/manhua/%s/%s.html", _cid, _path);
-
-        return Headers.of("Referer", referer);
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", referer);
+        return headers;
     }
 
 }

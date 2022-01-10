@@ -20,6 +20,10 @@ public class Source {
     private int type;
     @NotNull
     private boolean enable;
+//    @Property
+//    private String username;
+//    @Property
+//    private String passwd;
 
     @Generated(hash = 615387317)
     public Source() {
@@ -32,6 +36,21 @@ public class Source {
         this.type = type;
         this.enable = enable;
     }
+
+    
+
+    
+
+
+
+//    public Source(Long id, @NotNull String title, int type, boolean enable) {
+//        this.id = id;
+//        this.title = title;
+//        this.type = type;
+//        this.enable = enable;
+//        this.username = null;
+//        this.passwd = null;
+//    }
 
     @Override
     public boolean equals(Object o) {
@@ -74,5 +93,47 @@ public class Source {
     public void setEnable(boolean enable) {
         this.enable = enable;
     }
+
+//    public String getUsername() {
+//        return this.username;
+//    }
+//
+//    public void setUsername(String username) {
+//        this.username = username;
+//    }
+//
+//    public String getPasswd() {
+//        return this.passwd;
+//    }
+//
+//    public void setPasswd(String passwd) {
+//        this.passwd = passwd;
+//    }
+
+//    public void rememberLogin(String username, String passwd) {
+//        this.username = username;
+//        this.passwd = passwd;
+//    }
+//
+//    public void clearRemember() {
+//        username = null;
+//        passwd = null;
+//    }
+//
+//    public String getUsername() {
+//        return username;
+//    }
+//
+//    public String getPasswd() {
+//        return passwd;
+//    }
+//
+//    public void setUsername(String username) {
+//        this.username = username;
+//    }
+//
+//    public void setPasswd(String passwd) {
+//        this.passwd = passwd;
+//    }
 
 }

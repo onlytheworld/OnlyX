@@ -2,7 +2,6 @@ package com.OnlyX.presenter;
 
 import com.OnlyX.core.Manga;
 import com.OnlyX.manager.SourceManager;
-import com.OnlyX.model.Comic;
 import com.OnlyX.model.Source;
 import com.OnlyX.parser.Parser;
 import com.OnlyX.ui.view.ResultView;
@@ -11,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
-import rx.functions.Action1;
 
 /**
  * Created by Hiroshi on 2016/7/4.
@@ -25,7 +22,7 @@ public class ResultPresenter extends BasePresenter<ResultView> {
     private SourceManager mSourceManager;
     private State[] mStateArray;
     private String keyword;
-    private boolean strictSearch;
+    private final boolean strictSearch;
     private int error = 0;
     private String keywordTemp;
     private String comicTitleTemp = "";
@@ -83,26 +80,20 @@ public class ResultPresenter extends BasePresenter<ResultView> {
             }
             mCompositeSubscription.add(Manga.getCategoryComic(parser, keyword, ++mStateArray[0].page)
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Action1<List<Comic>>() {
-                        @Override
-                        public void call(List<Comic> list) {
+                    .subscribe(list -> {
 
-                            //修复扑飞漫画分类查看时的重复加载列表问题
-                            if (!comicTitleTemp.equals("") && comicTitleTemp.equals(list.get(0).getTitle())) {
-                                list.clear();
-                            }
-                            comicTitleTemp = list.get(0).getTitle();
-
-                            mBaseView.onLoadSuccess(list);
-                            mStateArray[0].state = STATE_NULL;
+                        //修复扑飞漫画分类查看时的重复加载列表问题
+                        if (!comicTitleTemp.equals("") && comicTitleTemp.equals(list.get(0).getTitle())) {
+                            list.clear();
                         }
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable throwable) {
-                            throwable.printStackTrace();
-                            if (mStateArray[0].page == 1) {
-                                mBaseView.onLoadFail();
-                            }
+                        comicTitleTemp = list.get(0).getTitle();
+
+                        mBaseView.onLoadSuccess(list);
+                        mStateArray[0].state = STATE_NULL;
+                    }, throwable -> {
+                        throwable.printStackTrace();
+                        if (mStateArray[0].page == 1) {
+                            mBaseView.onLoadFail();
                         }
                     }));
         }
@@ -115,7 +106,7 @@ public class ResultPresenter extends BasePresenter<ResultView> {
             return;
         }
         class SearchThread extends Thread {
-            private ResultPresenter.State obj;
+            private final ResultPresenter.State obj;
 
             public SearchThread(final ResultPresenter.State obj) {
                 this.obj = obj;
@@ -128,32 +119,19 @@ public class ResultPresenter extends BasePresenter<ResultView> {
                     obj.state = STATE_DOING;
                     mCompositeSubscription.add(Manga.getSearchResult(parser, keyword, ++obj.page, strictSearch)
                             .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(new Action1<Comic>() {
-                                @Override
-                                public void call(Comic comic) {
-                                    mBaseView.onSearchSuccess(comic);
-                                }
-                            }, new Action1<Throwable>() {
-                                @Override
-                                public void call(Throwable throwable) {
-                                    throwable.printStackTrace();
-                                    if (obj.page == 1) {
-                                        obj.state = STATE_DONE;
-                                        if (++error == mStateArray.length) {
-                                            mBaseView.onSearchError();
-                                        }
+                            .subscribe(comic -> mBaseView.onSearchSuccess(comic), throwable -> {
+                                throwable.printStackTrace();
+                                if (obj.page == 1) {
+                                    obj.state = STATE_DONE;
+                                    if (++error == mStateArray.length) {
+                                        mBaseView.onSearchError();
                                     }
                                 }
-                            }, new Action0() {
-                                @Override
-                                public void call() {
-                                    obj.state = STATE_NULL;
-                                }
-                            }));
+                            }, () -> obj.state = STATE_NULL));
                 }
             }
         }
-        ArrayList<SearchThread> threadlist = new ArrayList<SearchThread>();
+        ArrayList<SearchThread> threadlist = new ArrayList<>();
         for (final State obj : mStateArray) {
             threadlist.add(new SearchThread(obj));
         }

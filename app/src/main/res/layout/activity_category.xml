@@ -30,8 +30,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="6dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="10dp"
                     android:text="@string/category_subject"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="16sp" />
@@ -57,8 +57,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="6dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="10dp"
                     android:text="@string/category_area"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="16sp" />
@@ -84,8 +84,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="6dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="10dp"
                     android:text="@string/category_reader"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="16sp" />
@@ -111,8 +111,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="6dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="10dp"
                     android:text="@string/category_progress"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="16sp" />
@@ -138,8 +138,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="6dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="10dp"
                     android:text="@string/category_year"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="16sp" />
@@ -165,8 +165,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="6dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="10dp"
                     android:text="@string/category_order"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="16sp" />
@@ -177,6 +177,7 @@
                     android:layout_height="wrap_content" />
             </LinearLayout>
         </LinearLayout>
+
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/category_action_button"

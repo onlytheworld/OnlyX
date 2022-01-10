@@ -1,24 +1,25 @@
 package com.OnlyX.ui.fragment.recyclerview;
 
 import android.content.Intent;
-import androidx.annotation.ColorRes;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.ColorRes;
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.OnlyX.R;
+import com.OnlyX.global.Extra;
 import com.OnlyX.manager.SourceManager;
 import com.OnlyX.model.Source;
-import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.presenter.SourcePresenter;
 import com.OnlyX.ui.activity.CategoryActivity;
 import com.OnlyX.ui.activity.SearchActivity;
 import com.OnlyX.ui.activity.SourceDetailActivity;
-import com.OnlyX.ui.adapter.BaseAdapter;
 import com.OnlyX.ui.adapter.SourceAdapter;
 import com.OnlyX.ui.view.SourceView;
 import com.OnlyX.utils.HintUtils;
@@ -35,7 +36,7 @@ public class SourceFragment extends RecyclerViewFragment implements SourceView, 
     private SourceAdapter mSourceAdapter;
 
     @Override
-    protected BasePresenter initPresenter() {
+    protected SourcePresenter initPresenter() {
         mPresenter = new SourcePresenter();
         mPresenter.attachView(this);
         return mPresenter;
@@ -48,8 +49,8 @@ public class SourceFragment extends RecyclerViewFragment implements SourceView, 
     }
 
     @Override
-    protected BaseAdapter initAdapter() {
-        mSourceAdapter = new SourceAdapter(getActivity(), new ArrayList<Source>());
+    protected SourceAdapter initAdapter() {
+        mSourceAdapter = new SourceAdapter(getActivity(), new ArrayList<>());
         mSourceAdapter.setOnItemCheckedListener(this);
         return mSourceAdapter;
     }
@@ -65,18 +66,17 @@ public class SourceFragment extends RecyclerViewFragment implements SourceView, 
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu_source, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.comic_search:
-                Intent intent = new Intent(getActivity(), SearchActivity.class);
-                startActivity(intent);
-                break;
+        if (item.getItemId() == R.id.comic_search) {
+            Intent intent = new Intent(getActivity(), SearchActivity.class);
+            intent.putExtra(Extra.EXTRA_PICKER_PATH,"SourceFragment");
+            startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -120,7 +120,7 @@ public class SourceFragment extends RecyclerViewFragment implements SourceView, 
 
     @Override
     public void onThemeChange(@ColorRes int primary, @ColorRes int accent) {
-        mSourceAdapter.setColor(ContextCompat.getColor(getActivity(), accent));
+        mSourceAdapter.setColor(ContextCompat.getColor(requireActivity(), accent));
         mSourceAdapter.notifyDataSetChanged();
     }
 

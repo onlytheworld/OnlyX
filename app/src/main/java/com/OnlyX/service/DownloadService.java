@@ -6,9 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Pair;
+
 import androidx.annotation.Nullable;
 import androidx.collection.LongSparseArray;
-import android.util.Pair;
 
 import com.OnlyX.App;
 import com.OnlyX.R;
@@ -80,7 +81,7 @@ public class DownloadService extends Service implements AppGetter {
     @Override
     public void onCreate() {
         super.onCreate();
-        PreferenceManager manager = ((App) getApplication()).getPreferenceManager();
+        PreferenceManager manager = App.getPreferenceManager();
         int num = manager.getInt(PreferenceManager.PREF_DOWNLOAD_THREAD, 2);
         mWorkerArray = new LongSparseArray<>();
         mExecutorService = Executors.newFixedThreadPool(num);
@@ -166,8 +167,8 @@ public class DownloadService extends Service implements AppGetter {
 
     public class Worker implements Runnable {
 
-        private Task mTask;
-        private Parser mParse;
+        private final Task mTask;
+        private final Parser mParse;
 
         Worker(Task task) {
             mTask = task;
@@ -221,12 +222,12 @@ public class DownloadService extends Service implements AppGetter {
 
         private boolean RequestAndWrite(DocumentFile parent, Request request, int num, String url) throws InterruptedIOException {
             if (request != null) {
-                Response response = null;
-                try {
-                    response = mHttpClient.newCall(request).execute();
+                try (Response response = mHttpClient.newCall(request).execute()) {
                     if (response.isSuccessful()) {
                         String displayName = buildFileName(num, url);
                         DocumentFile file = DocumentUtils.getOrCreateFile(parent, displayName);
+                        assert file != null;
+                        assert response.body() != null;
                         DocumentUtils.writeBinaryToFile(mContentResolver, file, response.body().byteStream());
                         return true;
                     }
@@ -237,10 +238,6 @@ public class DownloadService extends Service implements AppGetter {
                     throw e;
                 } catch (IOException e) {
                     e.printStackTrace();
-                } finally {
-                    if (response != null) {
-                        response.close();
-                    }
                 }
             }
             return false;
@@ -272,7 +269,7 @@ public class DownloadService extends Service implements AppGetter {
         private List<ImageUrl> onDownloadParse() throws InterruptedIOException {
             mTask.setState(Task.STATE_PARSE);
             RxBus.getInstance().post(new RxEvent(RxEvent.EVENT_TASK_STATE_CHANGE, Task.STATE_PARSE, mTask.getId()));
-            return Manga.getImageUrls(mParse, mTask.getSource(), mTask.getCid(), mTask.getPath());
+            return Manga.getImageUrls(mParse, mTask.getCid(), mTask.getPath());
         }
 
         private void onDownloadProgress(int progress) {

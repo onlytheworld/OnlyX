@@ -18,7 +18,7 @@ public class MiniClockText extends AppCompatTextView {
     private Calendar mCalendar;
     private boolean mAttached = false;
 
-    private Runnable mTicker = new Runnable() {
+    private final Runnable mTicker = new Runnable() {
         @Override
         public void run() {
             mCalendar.setTimeInMillis(System.currentTimeMillis());

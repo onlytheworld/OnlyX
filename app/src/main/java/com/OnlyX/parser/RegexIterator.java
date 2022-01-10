@@ -1,10 +1,6 @@
 package com.OnlyX.parser;
 
 import com.OnlyX.model.Comic;
-import com.OnlyX.soup.Node;
-
-import java.util.List;
-import java.util.ListIterator;
 import java.util.regex.Matcher;
 
 /**
@@ -13,7 +9,7 @@ import java.util.regex.Matcher;
 
 public abstract class RegexIterator implements SearchIterator {
 
-    private Matcher match;
+    private final Matcher match;
 
     protected RegexIterator(Matcher match) {
         this.match = match;

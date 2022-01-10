@@ -13,6 +13,8 @@ import android.net.Uri;
 import android.os.Looper;
 import android.os.SystemClock;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.common.logging.FLog;
 import com.facebook.imagepipeline.image.EncodedImage;
 import com.facebook.imagepipeline.producers.BaseNetworkFetcher;
@@ -49,7 +51,7 @@ public class OkHttpNetworkFetcher extends
     private static final String IMAGE_SIZE = "image_size";
     private final OkHttpClient mOkHttpClient;
     private Executor mCancellationExecutor;
-    private Headers mHeaders;
+    private final Headers mHeaders;
 
     /**
      * @param okHttpClient client to use
@@ -93,12 +95,7 @@ public class OkHttpNetworkFetcher extends
                         if (Looper.myLooper() != Looper.getMainLooper()) {
                             call.cancel();
                         } else {
-                            mCancellationExecutor.execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    call.cancel();
-                                }
-                            });
+                            mCancellationExecutor.execute(call::cancel);
                         }
                     }
                 });
@@ -106,7 +103,7 @@ public class OkHttpNetworkFetcher extends
         call.enqueue(
                 new okhttp3.Callback() {
                     @Override
-                    public void onResponse(Call call, Response response) throws IOException {
+                    public void onResponse(@NonNull Call call, @NonNull Response response) {
                         fetchState.responseTime = SystemClock.elapsedRealtime();
                         final ResponseBody body = response.body();
                         try {
@@ -118,6 +115,7 @@ public class OkHttpNetworkFetcher extends
                                 return;
                             }
 
+                            assert body != null;
                             long contentLength = body.contentLength();
                             if (contentLength < 0) {
                                 contentLength = 0;
@@ -127,6 +125,7 @@ public class OkHttpNetworkFetcher extends
                             handleException(call, e, callback);
                         } finally {
                             try {
+                                assert body != null;
                                 body.close();
                             } catch (Exception e) {
                                 FLog.w(TAG, "Exception when closing response body", e);
@@ -135,7 +134,7 @@ public class OkHttpNetworkFetcher extends
                     }
 
                     @Override
-                    public void onFailure(Call call, IOException e) {
+                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
                         handleException(call, e, callback);
                     }
                 });

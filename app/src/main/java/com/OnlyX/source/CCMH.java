@@ -1,6 +1,5 @@
 package com.OnlyX.source;
 
-import com.google.common.collect.Lists;
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
@@ -11,14 +10,17 @@ import com.OnlyX.parser.SearchIterator;
 import com.OnlyX.parser.UrlFilter;
 import com.OnlyX.soup.Node;
 import com.OnlyX.utils.StringUtils;
+import com.google.common.collect.Lists;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import okhttp3.FormBody;
-import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -31,7 +33,7 @@ public class CCMH extends MangaParser {
     public static final String DEFAULT_TITLE = "CC漫画";
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     public CCMH(Source source) {
@@ -40,7 +42,7 @@ public class CCMH extends MangaParser {
 
     @Override
     public Request getSearchRequest(String keyword, int page) {
-        String url = "";
+        String url;
         if (page == 1) {
             url = "http://m.ccmh6.com/Search";
 
@@ -147,8 +149,8 @@ public class CCMH extends MangaParser {
         Matcher pageCountMatcher = Pattern.compile("<a href=\"\\?p=(\\d+)\">\\d+<\\/a>").matcher(html);
         int pageCount = 0;
         while (pageCountMatcher.find()) {
-            final int pageCountTemp = Integer.parseInt(pageCountMatcher.group(1));
-            pageCount = pageCount > pageCountTemp ? pageCount : pageCountTemp;
+            final int pageCountTemp = Integer.parseInt(Objects.requireNonNull(pageCountMatcher.group(1)));
+            pageCount = Math.max(pageCount, pageCountTemp);
         }
 
         for (int i = 0; i < pageCount; i++) {
@@ -168,8 +170,7 @@ public class CCMH extends MangaParser {
     @Override
     public String parseLazy(String html, String url) {
         Node body = new Node(html);
-        String src = body.src(".img > img");
-        return src;
+        return body.src(".img > img");
     }
 
     @Override
@@ -183,8 +184,10 @@ public class CCMH extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://m.ccmh6.com/");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://m.ccmh6.com/");
+        return headers;
     }
 
 }

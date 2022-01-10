@@ -1,12 +1,15 @@
 package com.OnlyX.ui.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Rect;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.OnlyX.R;
 import com.OnlyX.misc.Switcher;
@@ -37,20 +40,21 @@ public class ChapterAdapter extends BaseAdapter<Switcher<Chapter>> {
         return isButtonMode ? TYPE_BUTTON : TYPE_ITEM;
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == TYPE_ITEM) {
-            View view = mInflater.inflate(R.layout.item_select, parent, false);
+            View view = inflate(R.layout.item_select, parent, false);
             return new ItemHolder(view);
         }
-        View view = mInflater.inflate(R.layout.item_chapter, parent, false);
+        View view = inflate(R.layout.item_chapter, parent, false);
         return new ButtonHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        Switcher<Chapter> switcher = mDataSet.get(position);
+        Switcher<Chapter> switcher = get(position);
         if (isButtonMode) {
             final ButtonHolder viewHolder = (ButtonHolder) holder;
             viewHolder.chapterButton.setText(switcher.getElement().getTitle());
@@ -77,21 +81,23 @@ public class ChapterAdapter extends BaseAdapter<Switcher<Chapter>> {
     public RecyclerView.ItemDecoration getItemDecoration() {
         return new RecyclerView.ItemDecoration() {
             @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
                 int offset = parent.getWidth() / 40;
                 outRect.set(offset, 0, offset, (int) (offset * 1.5));
             }
         };
     }
 
-    @Override
-    protected boolean isClickValid() {
-        return true;
-    }
+//    @Override
+//    protected boolean isClickValid() {
+//        return true;
+//    }
 
     static class ItemHolder extends BaseAdapter.BaseViewHolder {
+        @SuppressLint("NonConstantResourceId")
         @BindView(R.id.item_select_title)
         TextView chapterTitle;
+        @SuppressLint("NonConstantResourceId")
         @BindView(R.id.item_select_checkbox)
         CheckBox chapterChoice;
 
@@ -101,6 +107,7 @@ public class ChapterAdapter extends BaseAdapter<Switcher<Chapter>> {
     }
 
     static class ButtonHolder extends BaseAdapter.BaseViewHolder {
+        @SuppressLint("NonConstantResourceId")
         @BindView(R.id.item_chapter_button)
         ChapterButton chapterButton;
 

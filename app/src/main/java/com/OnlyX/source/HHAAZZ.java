@@ -1,23 +1,20 @@
 package com.OnlyX.source;
 
-import android.util.Pair;
-
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
 import com.OnlyX.model.Source;
-import com.OnlyX.parser.MangaCategory;
 import com.OnlyX.parser.MangaParser;
 import com.OnlyX.parser.NodeIterator;
 import com.OnlyX.parser.SearchIterator;
 import com.OnlyX.soup.Node;
 import com.OnlyX.utils.StringUtils;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -29,11 +26,11 @@ public class HHAAZZ extends MangaParser {
     public static final String DEFAULT_TITLE = "汗汗酷漫";
 
     public HHAAZZ(Source source) {
-        init(source, new Category());
+        init(source, null);
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -89,7 +86,7 @@ public class HHAAZZ extends MangaParser {
                     break;
                 case 2:
                     String test = node.text().replace("状态:", "").trim();
-                    status = "连载" != test;
+                    status = !"连载".equals(test);
                     break;
                 case 4:
                     update = node.text().replace("更新:", "").trim();
@@ -137,7 +134,7 @@ public class HHAAZZ extends MangaParser {
 
         Node body = new Node(html);
         int i = 1;
-        for (Node node : body.list("#iPageHtm > a")) {
+        for (Node ignored : body.list("#iPageHtm > a")) {
             list.add(new ImageUrl(i,
                     StringUtils.format("http://www.hhimm.com/%s/%d.html?s=%s&d=0", pathId, i, pathS),
                     true));
@@ -158,10 +155,10 @@ public class HHAAZZ extends MangaParser {
         Node body = new Node(html);
 
         // get img key
-        final String imgEleIds[] = {"img1021", "img2391", "img7652", "imgCurr"};
+        final String[] imgEleIds = {"img1021", "img2391", "img7652", "imgCurr"};
         String imgKey = null;
-        for (int i = 0; i < imgEleIds.length; i++) {
-            imgKey = body.attr("#".concat(imgEleIds[i]), "name");
+        for (String imgEleId : imgEleIds) {
+            imgKey = body.attr("#".concat(imgEleId), "name");
             if (imgKey != null) break;
         }
 
@@ -184,8 +181,8 @@ public class HHAAZZ extends MangaParser {
         final String su = "www.hhimm.com";
         boolean b = false;
 
-        for (int i = 0; i < sw.split("|").length; i++) {
-            if (su.indexOf(sw.split("|")[i]) > -1) {
+        for (int i = 0; i < sw.split("\\|").length; i++) {
+            if (su.contains(sw.split("\\|")[i])) {
                 b = true;
                 break;
             }
@@ -205,10 +202,11 @@ public class HHAAZZ extends MangaParser {
             s = s.replace(k.substring(i, i + 1), Integer.toString(i));
         }
         String[] ss = s.split(f);
-        s = "";
-        for (int i = 0; i < ss.length; i++) {
-            s += fromCharCode(Integer.parseInt(ss[i]));
+        StringBuilder sBuilder = new StringBuilder();
+        for (String value : ss) {
+            sBuilder.append(fromCharCode(Integer.parseInt(value)));
         }
+        s = sBuilder.toString();
         return s;
     }
 
@@ -238,98 +236,100 @@ public class HHAAZZ extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://hhaass.com/");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://hhaass.com/");
+        return headers;
     }
-
-    private static class Category extends MangaCategory {
-
-        @Override
-        public String getFormat(String... args) {
-            if (!"".equals(args[CATEGORY_SUBJECT])) {
-                return StringUtils.format("http://hhaass.com/lists/%s/%%d", args[CATEGORY_SUBJECT]);
-            } else if (!"".equals(args[CATEGORY_AREA])) {
-                return StringUtils.format("http://hhaass.com/lists/%s/%%d", args[CATEGORY_AREA]);
-            } else if (!"".equals(args[CATEGORY_READER])) {
-                return StringUtils.format("http://hhaass.com/duzhequn/%s/%%d", args[CATEGORY_PROGRESS]);
-            } else if (!"".equals(args[CATEGORY_PROGRESS])) {
-                return StringUtils.format("http://hhaass.com/lianwan/%s/%%d", args[CATEGORY_PROGRESS]);
-            } else {
-                return "http://hhaass.com/dfcomiclist_%d.htm";
-            }
-        }
-
-        @Override
-        protected List<Pair<String, String>> getSubject() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("萌系", "1"));
-            list.add(Pair.create("搞笑", "2"));
-            list.add(Pair.create("格斗", "3"));
-            list.add(Pair.create("科幻", "4"));
-            list.add(Pair.create("剧情", "5"));
-            list.add(Pair.create("侦探", "6"));
-            list.add(Pair.create("竞技", "7"));
-            list.add(Pair.create("魔法", "8"));
-            list.add(Pair.create("神鬼", "9"));
-            list.add(Pair.create("校园", "10"));
-            list.add(Pair.create("惊栗", "11"));
-            list.add(Pair.create("厨艺", "12"));
-            list.add(Pair.create("伪娘", "13"));
-            list.add(Pair.create("图片", "14"));
-            list.add(Pair.create("冒险", "15"));
-            list.add(Pair.create("耽美", "21"));
-            list.add(Pair.create("经典", "22"));
-            list.add(Pair.create("亲情", "25"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasArea() {
-            return true;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getArea() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("大陆", "19"));
-            list.add(Pair.create("香港", "20"));
-            list.add(Pair.create("欧美", "23"));
-            list.add(Pair.create("日文", "24"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasReader() {
-            return true;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getReader() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("少年", "1"));
-            list.add(Pair.create("少女", "2"));
-            list.add(Pair.create("青年", "3"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasProgress() {
-            return true;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getProgress() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("连载", "1"));
-            list.add(Pair.create("完结", "2"));
-            return list;
-        }
-
-    }
+//
+//    private static class Category extends MangaCategory {
+//
+//        @Override
+//        public String getFormat(String... args) {
+//            if (!"".equals(args[CATEGORY_SUBJECT])) {
+//                return StringUtils.format("http://hhaass.com/lists/%s/%%d", args[CATEGORY_SUBJECT]);
+//            } else if (!"".equals(args[CATEGORY_AREA])) {
+//                return StringUtils.format("http://hhaass.com/lists/%s/%%d", args[CATEGORY_AREA]);
+//            } else if (!"".equals(args[CATEGORY_READER])) {
+//                return StringUtils.format("http://hhaass.com/duzhequn/%s/%%d", args[CATEGORY_PROGRESS]);
+//            } else if (!"".equals(args[CATEGORY_PROGRESS])) {
+//                return StringUtils.format("http://hhaass.com/lianwan/%s/%%d", args[CATEGORY_PROGRESS]);
+//            } else {
+//                return "http://hhaass.com/dfcomiclist_%d.htm";
+//            }
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getSubject() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("萌系", "1"));
+//            list.add(Pair.create("搞笑", "2"));
+//            list.add(Pair.create("格斗", "3"));
+//            list.add(Pair.create("科幻", "4"));
+//            list.add(Pair.create("剧情", "5"));
+//            list.add(Pair.create("侦探", "6"));
+//            list.add(Pair.create("竞技", "7"));
+//            list.add(Pair.create("魔法", "8"));
+//            list.add(Pair.create("神鬼", "9"));
+//            list.add(Pair.create("校园", "10"));
+//            list.add(Pair.create("惊栗", "11"));
+//            list.add(Pair.create("厨艺", "12"));
+//            list.add(Pair.create("伪娘", "13"));
+//            list.add(Pair.create("图片", "14"));
+//            list.add(Pair.create("冒险", "15"));
+//            list.add(Pair.create("耽美", "21"));
+//            list.add(Pair.create("经典", "22"));
+//            list.add(Pair.create("亲情", "25"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasArea() {
+//            return true;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getArea() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("大陆", "19"));
+//            list.add(Pair.create("香港", "20"));
+//            list.add(Pair.create("欧美", "23"));
+//            list.add(Pair.create("日文", "24"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasReader() {
+//            return true;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getReader() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("少年", "1"));
+//            list.add(Pair.create("少女", "2"));
+//            list.add(Pair.create("青年", "3"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasProgress() {
+//            return true;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getProgress() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("连载", "1"));
+//            list.add(Pair.create("完结", "2"));
+//            return list;
+//        }
+//
+//    }
 
 }
 

@@ -12,10 +12,11 @@ import com.OnlyX.utils.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -28,7 +29,7 @@ public class GuFeng extends MangaParser {
     public static final String DEFAULT_TITLE = "古风漫画";
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     public GuFeng(Source source) {
@@ -141,8 +142,11 @@ public class GuFeng extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("User-Agent", "Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) Applewebkit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://m.gufengmh8.com");
+        headers.put("User-Agent", "Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) Applewebkit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1");
+        return headers;
     }
 
 }

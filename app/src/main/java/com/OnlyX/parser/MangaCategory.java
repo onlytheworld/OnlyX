@@ -4,6 +4,8 @@ import android.util.Pair;
 
 import java.util.List;
 
+import okhttp3.Request;
+
 /**
  * Created by Hiroshi on 2016/12/10.
  */
@@ -54,6 +56,16 @@ public abstract class MangaCategory implements Category {
     }
 
     protected List<Pair<String, String>> getOrder() {
+        return null;
+    }
+
+    @Override
+    public Request getCategoryListRequest() {
+        return null;
+    }
+
+    @Override
+    public List<Pair<String, List<Pair<String, String>>>> getCategoryList(String html) {
         return null;
     }
 

@@ -19,8 +19,8 @@ public class Chapter implements Parcelable {
             return new Chapter[size];
         }
     };
-    private String title;
-    private String path;
+    private final String title;
+    private final String path;
     private int count;
     private boolean complete;
     private boolean download;

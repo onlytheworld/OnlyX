@@ -12,7 +12,7 @@ public class MiniComic {
     private String cover;
     private Boolean finish;
     private boolean highlight;
-    private boolean local;
+    private final boolean local;
 
     public MiniComic(Comic comic) {
         this.id = comic.getId();

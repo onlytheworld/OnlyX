@@ -16,9 +16,9 @@
             android:icon="@drawable/ic_import_contacts_black_24dp"
             android:title="@string/drawer_comic" />
         <item
-        android:id="@+id/drawer_comiclist"
-        android:icon="@drawable/ic_class_black_24dp"
-        android:title="@string/drawer_list"/>
+            android:id="@+id/drawer_comic_list"
+            android:icon="@drawable/ic_class_black_24dp"
+            android:title="@string/drawer_list" />
         <item
             android:id="@+id/drawer_source"
             android:checkable="true"
@@ -33,7 +33,8 @@
     <group android:id="@+id/drawer_group_system">
         <item
             android:id="@+id/drawer_night"
-            android:icon="@drawable/ic_brightness_4_black_24dp" />
+            android:icon="@drawable/ic_brightness_4_black_24dp"
+            android:title="" />
         <item
             android:id="@+id/drawer_backup"
             android:icon="@drawable/ic_save_black_24dp"

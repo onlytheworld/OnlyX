@@ -1,14 +1,19 @@
 package com.OnlyX.ui.adapter;
 
+import static com.OnlyX.App.getActivity;
+
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.OnlyX.R;
 import com.OnlyX.model.Task;
@@ -33,16 +38,17 @@ public class TaskAdapter extends BaseAdapter<Task> {
         super(context, list);
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.item_task, parent, false);
-        return new TaskHolder(view, ContextCompat.getColor(mContext, colorId));
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = inflate(R.layout.item_task, parent, false);
+        return new TaskHolder(view, ContextCompat.getColor(getActivity(), colorId));
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        Task task = mDataSet.get(position);
+        Task task = get(position);
         TaskHolder viewHolder = (TaskHolder) holder;
         viewHolder.taskTitle.setText(task.getTitle());
         viewHolder.taskState.setText(getState(task));
@@ -62,7 +68,7 @@ public class TaskAdapter extends BaseAdapter<Task> {
     public RecyclerView.ItemDecoration getItemDecoration() {
         return new RecyclerView.ItemDecoration() {
             @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
                 int offset = parent.getWidth() / 90;
                 outRect.set(0, 0, 0, offset);
             }
@@ -79,8 +85,8 @@ public class TaskAdapter extends BaseAdapter<Task> {
         }
         String temp = last;
         last = value;
-        for (int i = 0; i != mDataSet.size(); ++i) {
-            String path = mDataSet.get(i).getPath();
+        for (int i = 0; i != size(); ++i) {
+            String path = get(i).getPath();
             if (path.equals(last)) {
                 notifyItemChanged(i);
             } else if (path.equals(temp)) {
@@ -90,18 +96,19 @@ public class TaskAdapter extends BaseAdapter<Task> {
     }
 
     public int getPositionById(long id) {
-        int size = mDataSet.size();
+        int size = size();
         for (int i = 0; i != size; ++i) {
-            if (mDataSet.get(i).getId() == id) {
+            if (get(i).getId() == id) {
                 return i;
             }
         }
         return -1;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void removeById(List<Long> list) {
         Set<Long> set = new HashSet<>(list);
-        Iterator<Task> it = mDataSet.iterator();
+        Iterator<Task> it = getDateSet().iterator();
         while (it.hasNext()) {
             Task task = it.next();
             if (set.contains(task.getId())) {

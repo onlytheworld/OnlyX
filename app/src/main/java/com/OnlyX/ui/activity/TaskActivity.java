@@ -1,5 +1,6 @@
 package com.OnlyX.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -68,7 +69,7 @@ public class TaskActivity extends CoordinatorActivity implements TaskView {
 
     @Override
     protected BaseAdapter initAdapter() {
-        mTaskAdapter = new TaskAdapter(this, new LinkedList<Task>());
+        mTaskAdapter = new TaskAdapter(this, new LinkedList<>());
         return mTaskAdapter;
     }
 
@@ -80,6 +81,7 @@ public class TaskActivity extends CoordinatorActivity implements TaskView {
         mActionButton2.show();
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.coordinator_action_button2)
     void onActionButton2Click() {
         for (int i = 0; i < mTaskAdapter.getDateSet().size(); i++) {
@@ -94,7 +96,8 @@ public class TaskActivity extends CoordinatorActivity implements TaskView {
     }
 
     @Override
-    protected void initData() {
+    protected void initView() {
+        super.initView();
         long key = getIntent().getLongExtra(Extra.EXTRA_ID, -1);
         mTaskOrder = mPreference.getBoolean(PreferenceManager.PREF_CHAPTER_ASCEND_MODE, false);
         mPresenter.load(key, mTaskOrder);
@@ -114,6 +117,7 @@ public class TaskActivity extends CoordinatorActivity implements TaskView {
         return super.onCreateOptionsMenu(menu);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.coordinator_action_button)
     void onActionButtonClick() {
         Intent intent = DetailActivity.createIntent(this, mPresenter.getComic().getId(),
@@ -158,33 +162,32 @@ public class TaskActivity extends CoordinatorActivity implements TaskView {
         String[] item = {getString(R.string.task_read), getString(R.string.task_delete)};
         ItemDialogFragment fragment = ItemDialogFragment.newInstance(R.string.common_operation_select,
                 item, DIALOG_REQUEST_OPERATION);
-        fragment.show(getFragmentManager(), null);
+        fragment.show(getSupportFragmentManager(), null);
         return true;
     }
 
     @Override
     public void onDialogResult(int requestCode, Bundle bundle) {
-        switch (requestCode) {
-            case DIALOG_REQUEST_OPERATION:
-                int index = bundle.getInt(EXTRA_DIALOG_RESULT_INDEX);
-                switch (index) {
-                    case OPERATION_READ:
-                        startReader(mSavedTask.getPath(), true);
-                        break;
-                    case OPERATION_DELETE:
-                        showProgressDialog();
-                        List<Chapter> list = new ArrayList<>(1);
-                        list.add(new Chapter(mSavedTask.getTitle(), mSavedTask.getPath(), mSavedTask.getId()));
-                        if (!mPresenter.getComic().getLocal()) {
-                            mBinder.getService().removeDownload(mSavedTask.getId());
-                        }
-                        mPresenter.deleteTask(list, mTaskAdapter.getItemCount() == 1);
-                        break;
-                }
-                break;
+        if (requestCode == DIALOG_REQUEST_OPERATION) {
+            int index = bundle.getInt(EXTRA_DIALOG_RESULT_INDEX);
+            switch (index) {
+                case OPERATION_READ:
+                    startReader(mSavedTask.getPath(), true);
+                    break;
+                case OPERATION_DELETE:
+                    showProgressDialog();
+                    List<Chapter> list = new ArrayList<>(1);
+                    list.add(new Chapter(mSavedTask.getTitle(), mSavedTask.getPath(), mSavedTask.getId()));
+                    if (!mPresenter.getComic().getLocal()) {
+                        mBinder.getService().removeDownload(mSavedTask.getId());
+                    }
+                    mPresenter.deleteTask(list, mTaskAdapter.getItemCount() == 1);
+                    break;
+            }
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (!mTaskAdapter.getDateSet().isEmpty()) {
@@ -256,19 +259,17 @@ public class TaskActivity extends CoordinatorActivity implements TaskView {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_CODE_DELETE:
-                    List<Chapter> list = data.getParcelableArrayListExtra(Extra.EXTRA_CHAPTER);
-                    if (!list.isEmpty()) {
-                        showProgressDialog();
-                        for (Chapter chapter : list) {
-                            mBinder.getService().removeDownload(chapter.getTid());
-                        }
-                        mPresenter.deleteTask(list, mTaskAdapter.getItemCount() == list.size());
-                    } else {
-                        showSnackbar(R.string.task_empty);
+            if (requestCode == REQUEST_CODE_DELETE) {
+                List<Chapter> list = data.getParcelableArrayListExtra(Extra.EXTRA_CHAPTER);
+                if (!list.isEmpty()) {
+                    showProgressDialog();
+                    for (Chapter chapter : list) {
+                        mBinder.getService().removeDownload(chapter.getTid());
                     }
-                    break;
+                    mPresenter.deleteTask(list, mTaskAdapter.getItemCount() == list.size());
+                } else {
+                    showSnackbar(R.string.task_empty);
+                }
             }
         }
     }

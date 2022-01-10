@@ -4,21 +4,23 @@
     android:layout_width="match_parent"
     android:layout_height="140dp"
     android:clickable="true"
-    android:foreground="?android:attr/selectableItemBackground">
+    android:foreground="?android:attr/selectableItemBackground"
+    android:focusable="true">
 
-    <com.facebook.drawee.view.SimpleDraweeView
+    <ImageView
         android:id="@+id/item_grid_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        fresco:actualImageScaleType="centerCrop" />
+        fresco:actualImageScaleType="centerCrop"
+        android:contentDescription="@null" />
 
     <View
         android:id="@+id/item_grid_symbol"
-        android:layout_width="14dp"
-        android:layout_height="14dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:background="?attr/colorAccent"
+        android:layout_alignParentEnd="true"
+        android:background="?attr/colorError"
         android:visibility="invisible" />
 
     <LinearLayout

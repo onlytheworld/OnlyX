@@ -1,22 +1,26 @@
 package com.OnlyX.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.OnlyX.R;
 import com.OnlyX.global.Extra;
 import com.OnlyX.manager.PreferenceManager;
 import com.OnlyX.misc.Switcher;
 import com.OnlyX.model.Chapter;
+import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.ui.adapter.BaseAdapter;
 import com.OnlyX.ui.adapter.ChapterAdapter;
 import com.OnlyX.ui.widget.ViewUtils;
@@ -25,6 +29,7 @@ import com.OnlyX.utils.PermissionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -35,14 +40,15 @@ import butterknife.OnClick;
 
 public class ChapterActivity extends BackActivity implements BaseAdapter.OnItemClickListener {
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.chapter_recycler_view)
     RecyclerView mRecyclerView;
 
     private ChapterAdapter mChapterAdapter;
     private boolean isAscendMode;
     private boolean isButtonMode;
-    private Handler mHandler = new Handler();
-    private RecyclerView.OnItemTouchListener mListener = new CustomTouchListener();
+    private final Handler mHandler = new Handler();
+    private final RecyclerView.OnItemTouchListener mListener = new CustomTouchListener();
     private RecyclerView.ItemDecoration mDecoration;
 
     public static Intent createIntent(Context context, ArrayList<Chapter> list) {
@@ -172,22 +178,19 @@ public class ChapterActivity extends BackActivity implements BaseAdapter.OnItemC
         private boolean isLongPress = false;
 
         @Override
-        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+        public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
             if (isLongPress) {
                 return true;
             }
 
-            int pos = rv.getChildAdapterPosition(rv.findChildViewUnder(e.getX(), e.getY()));
+            int pos = rv.getChildAdapterPosition(Objects.requireNonNull(rv.findChildViewUnder(e.getX(), e.getY())));
             switch (e.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     mLastPosition = pos;
                     if (mLastPosition != -1) {
-                        mHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                isLongPress = true;
-                                update(mLastPosition);
-                            }
+                        mHandler.postDelayed(() -> {
+                            isLongPress = true;
+                            update(mLastPosition);
                         }, 500);
                     }
                     break;
@@ -208,7 +211,7 @@ public class ChapterActivity extends BackActivity implements BaseAdapter.OnItemC
 
         @Override
         public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-            int pos = rv.getChildAdapterPosition(rv.findChildViewUnder(e.getX(), e.getY()));
+            int pos = rv.getChildAdapterPosition(Objects.requireNonNull(rv.findChildViewUnder(e.getX(), e.getY())));
             switch (e.getAction()) {
                 case MotionEvent.ACTION_MOVE:
                     if (pos != -1 && mLastPosition != pos) {
@@ -230,6 +233,10 @@ public class ChapterActivity extends BackActivity implements BaseAdapter.OnItemC
             mChapterAdapter.getItem(pos).switchEnable();
             mChapterAdapter.notifyItemChanged(pos);
         }
+    }
+    @Override
+    protected BasePresenter initPresenter() {
+        return null;
     }
 
 }

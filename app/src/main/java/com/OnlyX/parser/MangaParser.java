@@ -1,5 +1,6 @@
 package com.OnlyX.parser;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 
 import com.OnlyX.model.Comic;
@@ -9,6 +10,7 @@ import com.OnlyX.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Headers;
 import okhttp3.Request;
@@ -21,6 +23,8 @@ public abstract class MangaParser implements Parser {
     protected String mTitle;
     protected List<UrlFilter> filter = new ArrayList<>();
     private Category mCategory;
+    protected static String windowsUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36";
+    protected static String mobileUA = "Mozilla/5.0 (Linux; Android 10; ELE-AL00 Build/HUAWEIELE-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.92 Mobile Safari/537.36";
 
     protected void init(Source source, Category category) {
         mTitle = source.getTitle();
@@ -31,6 +35,15 @@ public abstract class MangaParser implements Parser {
 
     protected void initUrlFilterList() {
 //        filter.add(new UrlFilter("manhua.dmzj.com", "/(\\w+)", 1));
+    }
+
+    @Override
+    public Request login(String username, String password, boolean remember) {
+        return null;
+    }
+
+    @Override
+    public void additionalParser(String body) {
     }
 
     @Override
@@ -79,17 +92,6 @@ public abstract class MangaParser implements Parser {
         return mTitle;
     }
 
-    protected String[] buildUrl(String path, String[] servers) {
-        if (servers != null) {
-            String[] url = new String[servers.length];
-            for (int i = 0; i != servers.length; ++i) {
-                url[i] = servers[i].concat(path);
-            }
-            return url;
-        }
-        return null;
-    }
-
     protected boolean isFinish(String text) {
         return text != null && (text.contains("完结") || text.contains("Completed"));
     }
@@ -100,25 +102,25 @@ public abstract class MangaParser implements Parser {
     }
 
     @Override
-    public Headers getHeader() {
+    public Map<String, String> getHeader() {
         return null;
     }
 
     @Override
     public Headers getHeader(String url) {
-        return getHeader();
+        return Headers.of(getHeader());
     }
 
     @Override
     public Headers getHeader(List<ImageUrl> list) {
-        return getHeader();
+        return Headers.of(getHeader());
     }
 
     @Override
     public boolean isHere(Uri uri) {
         boolean val = false;
         for (UrlFilter uf : filter) {
-            val |= (uri.getHost().indexOf(uf.Filter) != -1);
+            val |= (uri.getHost().contains(uf.Filter));
         }
         return val;
     }
@@ -126,11 +128,15 @@ public abstract class MangaParser implements Parser {
     @Override
     public String getComicId(Uri uri) {
         for (UrlFilter uf : filter) {
-            if (uri.getHost().indexOf(uf.Filter) != -1) {
+            if (uri.getHost().contains(uf.Filter)) {
                 return StringUtils.match(uf.Regex, uri.getPath(), uf.Group);
             }
         }
         return null;
+    }
+
+    @Override
+    public void decodeImages(Bitmap bitmap, String url) {
     }
 
 }

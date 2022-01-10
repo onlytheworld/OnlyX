@@ -1,6 +1,7 @@
 package com.OnlyX.source;
 
-import com.google.common.collect.Lists;
+import static com.OnlyX.utils.DecryptionUtils.evalDecrypt;
+
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
@@ -12,21 +13,22 @@ import com.OnlyX.parser.UrlFilter;
 import com.OnlyX.soup.Node;
 import com.OnlyX.utils.DecryptionUtils;
 import com.OnlyX.utils.StringUtils;
+import com.google.common.collect.Lists;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import okhttp3.Headers;
 import okhttp3.Request;
-
-import static com.OnlyX.utils.DecryptionUtils.evalDecrypt;
 
 /**
  * Created by FEILONG on 2017/12/21.
@@ -43,7 +45,7 @@ public class Tencent extends MangaParser {
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -128,7 +130,7 @@ public class Tencent extends MangaParser {
     }
 
     private String splice(String str, int from, int length) {
-        return str.substring(0, from) + str.substring(from + length, str.length());
+        return str.substring(0, from) + str.substring(from + length);
     }
 
     private String decodeData(String str, String nonce) {
@@ -141,7 +143,7 @@ public class Tencent extends MangaParser {
         int len = matches.size();
         while ((len--) != 0) {
             str = splice(str,
-                    Integer.parseInt(StringUtils.match("^\\d+", matches.get(len), 0)) & 255,
+                    Integer.parseInt(Objects.requireNonNull(StringUtils.match("^\\d+", matches.get(len), 0))) & 255,
                     StringUtils.replaceAll(matches.get(len), "\\d+", "").length()
             );
         }
@@ -195,8 +197,10 @@ public class Tencent extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "https://m.ac.qq.com");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "https://m.ac.qq.com");
+        return headers;
     }
 
 }

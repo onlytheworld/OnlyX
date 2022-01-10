@@ -1,36 +1,32 @@
 package com.OnlyX.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.facebook.imagepipeline.core.ImagePipelineFactory;
-import com.google.firebase.analytics.FirebaseAnalytics;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.OnlyX.App;
 import com.OnlyX.R;
-import com.OnlyX.fresco.ControllerBuilderSupplierFactory;
-import com.OnlyX.fresco.ImagePipelineFactoryBuilder;
 import com.OnlyX.global.Extra;
 import com.OnlyX.manager.PreferenceManager;
 import com.OnlyX.manager.SourceManager;
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.Task;
-import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.presenter.DetailPresenter;
 import com.OnlyX.service.DownloadService;
-import com.OnlyX.ui.adapter.BaseAdapter;
 import com.OnlyX.ui.adapter.DetailAdapter;
 import com.OnlyX.ui.view.DetailView;
 import com.OnlyX.utils.StringUtils;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -48,7 +44,7 @@ public class DetailActivity extends CoordinatorActivity implements DetailView {
 
     private DetailAdapter mDetailAdapter;
     private DetailPresenter mPresenter;
-    private ImagePipelineFactory mImagePipelineFactory;
+//    private ImagePipelineFactory mImagePipelineFactory;
 
     private boolean mAutoBackup;
     private int mBackupCount;
@@ -62,15 +58,15 @@ public class DetailActivity extends CoordinatorActivity implements DetailView {
     }
 
     @Override
-    protected BasePresenter initPresenter() {
+    protected DetailPresenter initPresenter() {
         mPresenter = new DetailPresenter();
         mPresenter.attachView(this);
         return mPresenter;
     }
 
     @Override
-    protected BaseAdapter initAdapter() {
-        mDetailAdapter = new DetailAdapter(this, new ArrayList<Chapter>());
+    protected DetailAdapter initAdapter() {
+        mDetailAdapter = new DetailAdapter(this, new ArrayList<>());
         mRecyclerView.setHasFixedSize(false);
         mRecyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         return mDetailAdapter;
@@ -82,7 +78,8 @@ public class DetailActivity extends CoordinatorActivity implements DetailView {
     }
 
     @Override
-    protected void initData() {
+    protected void initView() {
+        super.initView();
         mAutoBackup = mPreference.getBoolean(PreferenceManager.PREF_BACKUP_SAVE_COMIC, true);
         mBackupCount = mPreference.getInt(PreferenceManager.PREF_BACKUP_SAVE_COMIC_COUNT, 0);
         long id = getIntent().getLongExtra(Extra.EXTRA_ID, -1);
@@ -102,9 +99,9 @@ public class DetailActivity extends CoordinatorActivity implements DetailView {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mImagePipelineFactory != null) {
-            mImagePipelineFactory.getImagePipeline().clearMemoryCaches();
-        }
+//        if (mImagePipelineFactory != null) {
+//            mImagePipelineFactory.getImagePipeline().clearMemoryCaches();
+//        }
     }
 
     @Override
@@ -113,6 +110,7 @@ public class DetailActivity extends CoordinatorActivity implements DetailView {
         return super.onCreateOptionsMenu(menu);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent intent;
@@ -143,7 +141,7 @@ public class DetailActivity extends CoordinatorActivity implements DetailView {
                     break;
                 case R.id.detail_search_title:
                     if (!StringUtils.isEmpty(mPresenter.getComic().getTitle())) {
-                        if(App.getPreferenceManager().getBoolean(PreferenceManager.PREF_OTHER_FIREBASE_EVENT, true)) {
+                        if (App.getPreferenceManager().getBoolean(PreferenceManager.PREF_OTHER_FIREBASE_EVENT, true)) {
                             Bundle bundle = new Bundle();
                             bundle.putString(FirebaseAnalytics.Param.CONTENT, mPresenter.getComic().getTitle());
                             bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "byTitle");
@@ -174,7 +172,7 @@ public class DetailActivity extends CoordinatorActivity implements DetailView {
                     startActivity(Intent.createChooser(intent, url));
 
                     // firebase analytics
-                    if(App.getPreferenceManager().getBoolean(PreferenceManager.PREF_OTHER_FIREBASE_EVENT, true)) {
+                    if (App.getPreferenceManager().getBoolean(PreferenceManager.PREF_OTHER_FIREBASE_EVENT, true)) {
                         Bundle bundle = new Bundle();
                         bundle.putString(FirebaseAnalytics.Param.CONTENT, url);
                         bundle.putInt(FirebaseAnalytics.Param.SOURCE, mPresenter.getComic().getSource());
@@ -202,16 +200,15 @@ public class DetailActivity extends CoordinatorActivity implements DetailView {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_CODE_DOWNLOAD:
-                    showProgressDialog();
-                    List<Chapter> list = data.getParcelableArrayListExtra(Extra.EXTRA_CHAPTER);
-                    mPresenter.addTask(mDetailAdapter.getDateSet(), list);
-                    break;
+            if (requestCode == REQUEST_CODE_DOWNLOAD) {
+                showProgressDialog();
+                List<Chapter> list = data.getParcelableArrayListExtra(Extra.EXTRA_CHAPTER);
+                mPresenter.addTask(mDetailAdapter.getDateSet(), list);
             }
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.coordinator_action_button)
     void onActionButtonClick() {
         //todo: add comic to mangodb
@@ -228,6 +225,7 @@ public class DetailActivity extends CoordinatorActivity implements DetailView {
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.coordinator_action_button2)
     void onActionButton2Click() {
         if (!mDetailAdapter.getDateSet().isEmpty()) {
@@ -304,12 +302,12 @@ public class DetailActivity extends CoordinatorActivity implements DetailView {
     @Override
     public void onComicLoadSuccess(Comic comic) {
         mDetailAdapter.setInfo(comic.getCover(), comic.getTitle(), comic.getAuthor(),
-                comic.getIntro(), comic.getFinish(), comic.getUpdate(), comic.getLast());
-
+                comic.getIntro(), comic.getFinish(), comic.getUpdate(), comic.getLast(), comic.getSource());
         if (comic.getTitle() != null && comic.getCover() != null) {
-            mImagePipelineFactory = ImagePipelineFactoryBuilder.build(this, SourceManager.getInstance(this).getParser(comic.getSource()).getHeader(), false);
-            mDetailAdapter.setControllerSupplier(ControllerBuilderSupplierFactory.get(this, mImagePipelineFactory));
+//            mImagePipelineFactory = ImagePipelineFactoryBuilder.build(this, Headers.of(SourceManager.getInstance(this).getParser(comic.getSource()).getHeader()), false);
+//            mDetailAdapter.setControllerSupplier(ControllerBuilderSupplierFactory.get(this, mImagePipelineFactory));
 
+            mDetailAdapter.setSMGetter(SourceManager.getInstance(this).new SMGetter());
             int resId = comic.getFavorite() != null ? R.drawable.ic_favorite_white_24dp : R.drawable.ic_favorite_border_white_24dp;
             mActionButton.setImageResource(resId);
             mActionButton.setVisibility(View.VISIBLE);
@@ -320,7 +318,7 @@ public class DetailActivity extends CoordinatorActivity implements DetailView {
     @Override
     public void onChapterLoadSuccess(List<Chapter> list) {
         hideProgressBar();
-        if(App.getPreferenceManager().getBoolean(PreferenceManager.PREF_OTHER_FIREBASE_EVENT, true)) {
+        if (App.getPreferenceManager().getBoolean(PreferenceManager.PREF_OTHER_FIREBASE_EVENT, true)) {
             Bundle bundle = new Bundle();
             bundle.putString(FirebaseAnalytics.Param.CONTENT, mPresenter.getComic().getTitle());
             bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Title");
@@ -336,7 +334,7 @@ public class DetailActivity extends CoordinatorActivity implements DetailView {
 
     @Override
     public void onParseError() {
-        if(App.getPreferenceManager().getBoolean(PreferenceManager.PREF_OTHER_FIREBASE_EVENT, true)) {
+        if (App.getPreferenceManager().getBoolean(PreferenceManager.PREF_OTHER_FIREBASE_EVENT, true)) {
             Bundle bundle = new Bundle();
             bundle.putString(FirebaseAnalytics.Param.CONTENT, mPresenter.getComic().getTitle());
             bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Title");

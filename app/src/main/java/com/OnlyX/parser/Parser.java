@@ -1,5 +1,6 @@
 package com.OnlyX.parser;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 
 import com.OnlyX.model.Chapter;
@@ -13,6 +14,7 @@ import org.json.JSONException;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Headers;
 import okhttp3.Request;
@@ -44,6 +46,8 @@ public interface Parser {
      * @param cid 漫画 ID
      */
     Request getInfoRequest(String cid);
+
+    Request login(String username, String password, boolean remember);
 
     /**
      * 解析详情
@@ -147,7 +151,7 @@ public interface Parser {
     /**
      * 获取下载图片时的 HTTP 请求头，一般用来设置 Referer 和 Cookie
      */
-    Headers getHeader();
+    Map<String, String> getHeader();
 
     Headers getHeader(String url);
 
@@ -167,4 +171,9 @@ public interface Parser {
      * 根据uri返回comic id
      */
     String getComicId(Uri uri);
+
+    void decodeImages(Bitmap bitmap, String url);
+
+    void additionalParser(String body);
+
 }

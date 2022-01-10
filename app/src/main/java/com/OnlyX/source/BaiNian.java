@@ -12,11 +12,12 @@ import com.OnlyX.soup.Node;
 import com.OnlyX.utils.StringUtils;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.FormBody;
-import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -34,7 +35,7 @@ public class BaiNian extends MangaParser {
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     // 这里一直无法弄好
@@ -125,15 +126,15 @@ public class BaiNian extends MangaParser {
     public List<ImageUrl> parseImages(String html) {
         List<ImageUrl> list = new LinkedList<>();
         String url = StringUtils.match("z_yurl='(.*?)'", html, 1);
-        String str = StringUtils.match("z_img=\'\\[(.*?)\\]\'", html, 1);
+        String str = StringUtils.match("z_img='\\[(.*?)\\]'", html, 1);
         if (str != null && !str.equals("")) {
             try {
                 String[] array = str.split(",");
                 for (int i = 0; i != array.length; ++i) {
                     String[] ss = array[i].split("\\\\/");
-                    String lastStr = null;
-                    String prevStr = null;
-                    String s = null;
+                    String lastStr;
+                    String prevStr;
+                    String s;
                     if (ss.length > 5) {
                         prevStr = ss[3] + "/" + ss[4] + "/";
                         lastStr = ss[7].substring(0, ss[7].length() - 1);
@@ -167,7 +168,9 @@ public class BaiNian extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "https://m.bnmanhua.com");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "https://m.bnmanhua.com");
+        return headers;
     }
 }

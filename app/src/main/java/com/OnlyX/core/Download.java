@@ -17,12 +17,10 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
 import rx.Observable;
-import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
 /**
@@ -96,12 +94,15 @@ public class Download {
 
     private static void createNoMedia(DocumentFile root) {
         DocumentFile home = DocumentUtils.getOrCreateSubDirectory(root, DOWNLOAD);
+        assert home != null;
         DocumentUtils.getOrCreateFile(home, NO_MEDIA);
     }
 
     private static DocumentFile createComicIndex(DocumentFile root, Comic comic) {
         DocumentFile home = DocumentUtils.getOrCreateSubDirectory(root, DOWNLOAD);
+        assert home != null;
         DocumentFile source = DocumentUtils.getOrCreateSubDirectory(home, String.valueOf(comic.getSource()));
+        assert source != null;
         DocumentFile dir = DocumentUtils.getOrCreateSubDirectory(source, comic.getCid());
         if (dir != null) {
             return DocumentUtils.getOrCreateFile(dir, FILE_INDEX);
@@ -112,14 +113,15 @@ public class Download {
     /**
      * 写漫画索引，不关心是否成功，若没有索引文件，则不能排序章节及扫描恢复漫画，但不影响下载及观看
      *
-     * @param list
-     * @param comic
+     * @param list *
+     * @param comic *
      */
     public static void updateComicIndex(ContentResolver resolver, DocumentFile root, List<Chapter> list, Comic comic) {
         try {
             createNoMedia(root);
             String jsonString = getJsonFromComic(list, comic);
             DocumentFile file = createComicIndex(root, comic);
+            assert file != null;
             DocumentUtils.writeStringToFile(resolver, file, "onlyx".concat(jsonString));
         } catch (Exception e) {
             e.printStackTrace();
@@ -149,11 +151,15 @@ public class Download {
         try {
             String jsonString = getJsonFromChapter(task.getTitle(), task.getPath());
             DocumentFile dir1 = DocumentUtils.getOrCreateSubDirectory(root, DOWNLOAD);
+            assert dir1 != null;
             DocumentFile dir2 = DocumentUtils.getOrCreateSubDirectory(dir1, String.valueOf(task.getSource()));
+            assert dir2 != null;
             DocumentFile dir3 = DocumentUtils.getOrCreateSubDirectory(dir2, task.getCid());
+            assert dir3 != null;
             DocumentFile dir4 = DocumentUtils.getOrCreateSubDirectory(dir3, DecryptionUtils.urlDecrypt(task.getPath().replaceAll("/|\\?", "-")));
             if (dir4 != null) {
                 DocumentFile file = DocumentUtils.getOrCreateFile(dir4, FILE_INDEX);
+                assert file != null;
                 DocumentUtils.writeStringToFile(resolver, file, "onlyx".concat(jsonString));
                 return dir4;
             }
@@ -177,8 +183,8 @@ public class Download {
      * 1.4.4 以后位于 存储目录/download/图源ID/漫画ID
      *
      * @param root  存储目录
-     * @param comic
-     * @return
+     * @param comic *
+     * @return *
      */
     private static DocumentFile getComicDir(DocumentFile root, Comic comic, String title) {
         DocumentFile result = DocumentUtils.findFile(root, DOWNLOAD, String.valueOf(comic.getSource()), comic.getCid());
@@ -231,29 +237,16 @@ public class Download {
     }
 
     public static Observable<List<ImageUrl>> images(final DocumentFile root, final Comic comic, final Chapter chapter, final String title) {
-        return Observable.create(new Observable.OnSubscribe<List<ImageUrl>>() {
-            @Override
-            public void call(Subscriber<? super List<ImageUrl>> subscriber) {
-                DocumentFile dir = getChapterDir(root, comic, chapter, title);
-                List<DocumentFile> files = dir.listFiles(new DocumentFile.DocumentFileFilter() {
-                    @Override
-                    public boolean call(DocumentFile file) {
-                        return !file.getName().endsWith("cdif");
-                    }
-                }, new Comparator<DocumentFile>() {
-                    @Override
-                    public int compare(DocumentFile lhs, DocumentFile rhs) {
-                        return lhs.getName().compareTo(rhs.getName());
-                    }
-                });
+        return Observable.create((Observable.OnSubscribe<List<ImageUrl>>) subscriber -> {
+            DocumentFile dir = getChapterDir(root, comic, chapter, title);
+            List<DocumentFile> files = dir.listFiles(file -> !file.getName().endsWith("cdif"), (lhs, rhs) -> lhs.getName().compareTo(rhs.getName()));
 
-                List<ImageUrl> list = Storage.buildImageUrlFromDocumentFile(files, chapter.getPath(), chapter.getCount());
-                if (list.size() != 0) {
-                    subscriber.onNext(list);
-                    subscriber.onCompleted();
-                } else {
-                    subscriber.onError(new Exception());
-                }
+            List<ImageUrl> list = Storage.buildImageUrlFromDocumentFile(files, chapter.getPath(), chapter.getCount());
+            if (list.size() != 0) {
+                subscriber.onNext(list);
+                subscriber.onCompleted();
+            } else {
+                subscriber.onError(new Exception());
             }
         }).subscribeOn(Schedulers.io());
     }
@@ -332,34 +325,31 @@ public class Download {
     }
 
     public static Observable<Pair<Comic, List<Task>>> scan(final ContentResolver resolver, final DocumentFile root) {
-        return Observable.create(new Observable.OnSubscribe<Pair<Comic, List<Task>>>() {
-            @Override
-            public void call(Subscriber<? super Pair<Comic, List<Task>>> subscriber) {
-                root.refresh();
-                DocumentFile downloadDir = DocumentUtils.getOrCreateSubDirectory(root, DOWNLOAD);
-                if (downloadDir != null) {
-                    for (DocumentFile sourceDir : downloadDir.listFiles()) {
-                        if (sourceDir.isDirectory()) {
-                            for (DocumentFile comicDir : sourceDir.listFiles()) {
-                                Comic comic = buildComicFromDir(resolver, comicDir);
-                                if (comic != null) {
-                                    List<Task> list = new LinkedList<>();
-                                    for (DocumentFile chapterDir : comicDir.listFiles()) {
-                                        Task task = buildTaskFromDir(resolver, chapterDir);
-                                        if (task != null) {
-                                            list.add(task);
-                                        }
+        return Observable.create((Observable.OnSubscribe<Pair<Comic, List<Task>>>) subscriber -> {
+            root.refresh();
+            DocumentFile downloadDir = DocumentUtils.getOrCreateSubDirectory(root, DOWNLOAD);
+            if (downloadDir != null) {
+                for (DocumentFile sourceDir : downloadDir.listFiles()) {
+                    if (sourceDir.isDirectory()) {
+                        for (DocumentFile comicDir : sourceDir.listFiles()) {
+                            Comic comic = buildComicFromDir(resolver, comicDir);
+                            if (comic != null) {
+                                List<Task> list = new LinkedList<>();
+                                for (DocumentFile chapterDir : comicDir.listFiles()) {
+                                    Task task = buildTaskFromDir(resolver, chapterDir);
+                                    if (task != null) {
+                                        list.add(task);
                                     }
-                                    if (!list.isEmpty()) {
-                                        subscriber.onNext(Pair.create(comic, list));
-                                    }
+                                }
+                                if (!list.isEmpty()) {
+                                    subscriber.onNext(Pair.create(comic, list));
                                 }
                             }
                         }
                     }
                 }
-                subscriber.onCompleted();
             }
+            subscriber.onCompleted();
         }).subscribeOn(Schedulers.io());
     }
 

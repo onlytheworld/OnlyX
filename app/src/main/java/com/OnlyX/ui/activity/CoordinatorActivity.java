@@ -1,13 +1,15 @@
 package com.OnlyX.ui.activity;
 
+import android.annotation.SuppressLint;
+import android.view.View;
+
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.view.View;
 
 import com.OnlyX.R;
 import com.OnlyX.ui.adapter.BaseAdapter;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import butterknife.BindView;
 
@@ -18,12 +20,16 @@ import butterknife.BindView;
 public abstract class CoordinatorActivity extends BackActivity implements
         BaseAdapter.OnItemClickListener, BaseAdapter.OnItemLongClickListener {
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.coordinator_action_button)
     FloatingActionButton mActionButton;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.coordinator_action_button2)
     FloatingActionButton mActionButton2;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.coordinator_recycler_view)
     RecyclerView mRecyclerView;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.coordinator_layout)
     CoordinatorLayout mLayoutView;
 

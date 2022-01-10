@@ -2,13 +2,6 @@ package com.OnlyX.source;
 
 
 
-import android.util.Pair;
-
-import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.SerializedName;
 import com.OnlyX.App;
 import com.OnlyX.core.Manga;
 import com.OnlyX.model.Chapter;
@@ -16,13 +9,11 @@ import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
 import com.OnlyX.model.Source;
 import com.OnlyX.parser.JsonIterator;
-import com.OnlyX.parser.MangaCategory;
 import com.OnlyX.parser.MangaParser;
 import com.OnlyX.parser.SearchIterator;
-import com.OnlyX.soup.MDocument;
 import com.OnlyX.soup.Node;
-import com.OnlyX.ui.activity.ResultActivity;
 import com.OnlyX.utils.StringUtils;
+import com.google.common.collect.Lists;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,12 +21,11 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 
@@ -50,11 +40,11 @@ public class Manhuatai extends MangaParser {
     public static final String baseUrl = "https://m.manhuatai.com";
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     public Manhuatai(Source source) {
-        init(source, new Category());
+        init(source, null);
     }
 
     @Override
@@ -75,9 +65,7 @@ public class Manhuatai extends MangaParser {
                 String title = object.getString("comic_name");
                 String cid = object.getString("comic_newid");
                 String cover = "https://image.yqmh.com/mh/" + object.getString("comic_id") + ".jpg-300x400.webp";
-                String author = null;
-                String update = null;
-                return new Comic(TYPE, cid, title, cover, update, author);
+                return new Comic(TYPE, cid, title, cover, null, null);
             }
         };
     }
@@ -129,10 +117,9 @@ public class Manhuatai extends MangaParser {
         cover = "https:" + cover;
 //        Log.i("Cover", cover);
         String update = body.text("span.update").substring(0,10);
-        String author = null;
         String intro = body.text("div#js_comciDesc > p.desc-content");
 //        boolean status = isFinish(body.text("div.jshtml > ul > li:nth-child(2)").substring(3));
-        comic.setInfo(title, cover, update, intro, author, false);
+        comic.setInfo(title, cover, update, intro, null, false);
     }
 
     @Override
@@ -191,21 +178,6 @@ public class Manhuatai extends MangaParser {
     }
 
 
-    class MhInfo {
-        @SerializedName("startimg")
-        int startimg;
-        @SerializedName("totalimg")
-        int totalimg;
-        @SerializedName("pageid")
-        int pageid;
-        @SerializedName("comic_size")
-        String comic_size;
-        @SerializedName("domain")
-        String domain;
-        @SerializedName("imgpath")
-        String imgpath;
-    }
-
     @Override
     public Request getCheckRequest(String cid) {
         return getInfoRequest(cid);
@@ -249,73 +221,75 @@ public class Manhuatai extends MangaParser {
         }
         return list;
     }
-
-    private static class Category extends MangaCategory {
-
-        @Override
-        public boolean isComposite() {
-            return true;
-        }
-
-        @Override
-        public String getFormat(String... args) {
-            return StringUtils.format("https://www.manhuatai.com/%s_p%%d.html",
-                    args[CATEGORY_SUBJECT]);
-        }
-
-        @Override
-        public List<Pair<String, String>> getSubject() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部漫画", "all"));
-            list.add(Pair.create("知音漫客", "zhiyinmanke"));
-            list.add(Pair.create("神漫", "shenman"));
-            list.add(Pair.create("风炫漫画", "fengxuanmanhua"));
-            list.add(Pair.create("漫画周刊", "manhuazhoukan"));
-            list.add(Pair.create("飒漫乐画", "samanlehua"));
-            list.add(Pair.create("飒漫画", "samanhua"));
-            list.add(Pair.create("漫画世界", "manhuashijie"));
-//            list.add(Pair.create("排行榜", "top"));
-
-//            list.add(Pair.create("热血", "rexue"));
-//            list.add(Pair.create("神魔", "shenmo"));
-//            list.add(Pair.create("竞技", "jingji"));
-//            list.add(Pair.create("恋爱", "lianai"));
-//            list.add(Pair.create("霸总", "bazong"));
-//            list.add(Pair.create("玄幻", "xuanhuan"));
-//            list.add(Pair.create("穿越", "chuanyue"));
-//            list.add(Pair.create("搞笑", "gaoxiao"));
-//            list.add(Pair.create("冒险", "maoxian"));
-//            list.add(Pair.create("萝莉", "luoli"));
-//            list.add(Pair.create("武侠", "wuxia"));
-//            list.add(Pair.create("社会", "shehui"));
-//            list.add(Pair.create("都市", "dushi"));
-//            list.add(Pair.create("漫改", "mangai"));
-//            list.add(Pair.create("杂志", "zazhi"));
-//            list.add(Pair.create("悬疑", "xuanyi"));
-//            list.add(Pair.create("恐怖", "kongbu"));
-//            list.add(Pair.create("生活", "shenghuo"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasOrder() {
-            return false;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getOrder() {
+//
+//    private static class Category extends MangaCategory {
+//
+//        @Override
+//        public boolean isComposite() {
+//            return true;
+//        }
+//
+//        @Override
+//        public String getFormat(String... args) {
+//            return StringUtils.format("https://www.manhuatai.com/%s_p%%d.html",
+//                    args[CATEGORY_SUBJECT]);
+//        }
+//
+//        @Override
+//        public List<Pair<String, String>> getSubject() {
 //            List<Pair<String, String>> list = new ArrayList<>();
-//            list.add(Pair.create("更新", "update"));
-//            list.add(Pair.create("发布", "index"));
-//            list.add(Pair.create("人气", "view"));
-            return null;
-        }
-
-    }
+//            list.add(Pair.create("全部漫画", "all"));
+//            list.add(Pair.create("知音漫客", "zhiyinmanke"));
+//            list.add(Pair.create("神漫", "shenman"));
+//            list.add(Pair.create("风炫漫画", "fengxuanmanhua"));
+//            list.add(Pair.create("漫画周刊", "manhuazhoukan"));
+//            list.add(Pair.create("飒漫乐画", "samanlehua"));
+//            list.add(Pair.create("飒漫画", "samanhua"));
+//            list.add(Pair.create("漫画世界", "manhuashijie"));
+////            list.add(Pair.create("排行榜", "top"));
+//
+////            list.add(Pair.create("热血", "rexue"));
+////            list.add(Pair.create("神魔", "shenmo"));
+////            list.add(Pair.create("竞技", "jingji"));
+////            list.add(Pair.create("恋爱", "lianai"));
+////            list.add(Pair.create("霸总", "bazong"));
+////            list.add(Pair.create("玄幻", "xuanhuan"));
+////            list.add(Pair.create("穿越", "chuanyue"));
+////            list.add(Pair.create("搞笑", "gaoxiao"));
+////            list.add(Pair.create("冒险", "maoxian"));
+////            list.add(Pair.create("萝莉", "luoli"));
+////            list.add(Pair.create("武侠", "wuxia"));
+////            list.add(Pair.create("社会", "shehui"));
+////            list.add(Pair.create("都市", "dushi"));
+////            list.add(Pair.create("漫改", "mangai"));
+////            list.add(Pair.create("杂志", "zazhi"));
+////            list.add(Pair.create("悬疑", "xuanyi"));
+////            list.add(Pair.create("恐怖", "kongbu"));
+////            list.add(Pair.create("生活", "shenghuo"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasOrder() {
+//            return false;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getOrder() {
+////            List<Pair<String, String>> list = new ArrayList<>();
+////            list.add(Pair.create("更新", "update"));
+////            list.add(Pair.create("发布", "index"));
+////            list.add(Pair.create("人气", "view"));
+//            return null;
+//        }
+//
+//    }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "https://m.manhuatai.com");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "https://m.manhuatai.com");
+        return headers;
     }
 
 }

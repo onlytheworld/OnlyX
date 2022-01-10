@@ -36,7 +36,7 @@ public class ScaleDragDetector implements ScaleGestureDetector.OnScaleGestureLis
     private boolean mIsDragging;
     private float mLastTouchX;
     private float mLastTouchY;
-    private OnScaleDragGestureListener mListener;
+    private final OnScaleDragGestureListener mListener;
 
     public ScaleDragDetector(Context context, OnScaleDragGestureListener listener) {
         final ViewConfiguration configuration = ViewConfiguration
@@ -95,12 +95,11 @@ public class ScaleDragDetector implements ScaleGestureDetector.OnScaleGestureLis
         }
     }
 
-    public boolean onTouchEvent(MotionEvent ev) {
+    public void onTouchEvent(MotionEvent ev) {
         try {
             mDetector.onTouchEvent(ev);
-            return processTouchEvent(ev);
+            processTouchEvent(ev);
         } catch (IllegalArgumentException e) {
-            return true;
         }
     }
 

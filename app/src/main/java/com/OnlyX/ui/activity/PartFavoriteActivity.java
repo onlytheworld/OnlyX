@@ -3,11 +3,12 @@ package com.OnlyX.ui.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.OnlyX.App;
 import com.OnlyX.R;
@@ -15,7 +16,6 @@ import com.OnlyX.global.Extra;
 import com.OnlyX.manager.SourceManager;
 import com.OnlyX.manager.TagManager;
 import com.OnlyX.model.MiniComic;
-import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.presenter.PartFavoritePresenter;
 import com.OnlyX.ui.adapter.BaseAdapter;
 import com.OnlyX.ui.adapter.GridAdapter;
@@ -56,7 +56,7 @@ public class PartFavoriteActivity extends BackActivity implements PartFavoriteVi
     }
 
     @Override
-    protected BasePresenter initPresenter() {
+    protected PartFavoritePresenter initPresenter() {
         mPresenter = new PartFavoritePresenter();
         mPresenter.attachView(this);
         return mPresenter;
@@ -65,10 +65,10 @@ public class PartFavoriteActivity extends BackActivity implements PartFavoriteVi
     @Override
     protected void initView() {
         super.initView();
-        mGridAdapter = new GridAdapter(this, new LinkedList<MiniComic>());
+        mGridAdapter = new GridAdapter(this, new LinkedList<>());
         mGridAdapter.setSymbol(true);
         mGridAdapter.setProvider(((App) getApplication()).getBuilderProvider());
-        mGridAdapter.setTitleGetter(SourceManager.getInstance(this).new TitleGetter());
+        mGridAdapter.setSMGetter(SourceManager.getInstance(this).new SMGetter());
         mGridAdapter.setOnItemClickListener(this);
         mGridAdapter.setOnItemLongClickListener(this);
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
@@ -76,10 +76,6 @@ public class PartFavoriteActivity extends BackActivity implements PartFavoriteVi
         mRecyclerView.setItemAnimator(null);
         mRecyclerView.addItemDecoration(mGridAdapter.getItemDecoration());
         mRecyclerView.setAdapter(mGridAdapter);
-    }
-
-    @Override
-    protected void initData() {
         long id = getIntent().getLongExtra(Extra.EXTRA_ID, -1);
         isDeletable = id != TagManager.TAG_CONTINUE && id != TagManager.TAG_FINISH;
         mPresenter.load(id);
@@ -95,11 +91,9 @@ public class PartFavoriteActivity extends BackActivity implements PartFavoriteVi
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.part_favorite_add:
-                showProgressDialog();
-                mPresenter.loadComicTitle(mGridAdapter.getDateSet());
-                break;
+        if (item.getItemId() == R.id.part_favorite_add) {
+            showProgressDialog();
+            mPresenter.loadComicTitle(mGridAdapter.getDateSet());
         }
         return super.onOptionsItemSelected(item);
     }
@@ -117,7 +111,7 @@ public class PartFavoriteActivity extends BackActivity implements PartFavoriteVi
             mSavedComic = mGridAdapter.getItem(position);
             MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.dialog_confirm,
                     R.string.part_favorite_delete_confirm, true, DIALOG_REQUEST_DELETE);
-            fragment.show(getFragmentManager(), null);
+            fragment.show(getSupportFragmentManager(), null);
             return true;
         }
         return false;
@@ -155,9 +149,9 @@ public class PartFavoriteActivity extends BackActivity implements PartFavoriteVi
     @Override
     public void onComicTitleLoadSuccess(List<String> list) {
         hideProgressDialog();
-        MultiDialogFragment fragment = MultiDialogFragment.newInstance(R.string.part_favorite_select,
-                list.toArray(new String[list.size()]), null, DIALOG_REQUEST_ADD);
-        fragment.show(getFragmentManager(), null);
+        MultiDialogFragment fragment = MultiDialogFragment.newInstance(this, R.string.part_favorite_select,
+                list.toArray(new String[0]), null, DIALOG_REQUEST_ADD);
+        fragment.show(getSupportFragmentManager(), null);
     }
 
     @Override

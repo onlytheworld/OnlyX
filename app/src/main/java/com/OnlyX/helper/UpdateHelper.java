@@ -1,13 +1,16 @@
 package com.OnlyX.helper;
 
+import android.app.Application;
+
 import com.OnlyX.BuildConfig;
 import com.OnlyX.manager.PreferenceManager;
-import com.OnlyX.model.Comic;
-import com.OnlyX.model.ComicDao;
 import com.OnlyX.model.DaoSession;
 import com.OnlyX.model.Source;
 import com.OnlyX.source.*;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,39 +23,26 @@ public class UpdateHelper {
     // 1.04.08.008
     private static final int VERSION = BuildConfig.VERSION_CODE;
 
-    public static void update(PreferenceManager manager, final DaoSession session) {
+    public static void update(Application app, PreferenceManager manager, final DaoSession session) {
         int version = manager.getInt(PreferenceManager.PREF_APP_VERSION, 0);
         if (version != VERSION) {
-            initSource(session);
+            try {
+                initSource(app, session);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             manager.putInt(PreferenceManager.PREF_APP_VERSION, VERSION);
         }
     }
 
     /**
-     * app: 1.4.8.0 -> 1.4.8.1
-     * 删除本地漫画中 download 字段的值
-     */
-    private static void deleteDownloadFromLocal(final DaoSession session) {
-        session.runInTx(new Runnable() {
-            @Override
-            public void run() {
-                ComicDao dao = session.getComicDao();
-                List<Comic> list = dao.queryBuilder().where(ComicDao.Properties.Local.eq(true)).list();
-                if (!list.isEmpty()) {
-                    for (Comic comic : list) {
-                        comic.setDownload(null);
-                    }
-                    dao.updateInTx(list);
-                }
-            }
-        });
-    }
-
-    /**
      * 初始化图源
      */
-    private static void initSource(DaoSession session) {
+    private static void initSource(Application app, DaoSession session) throws IOException, JSONException {
         List<Source> list = new ArrayList<>();
+//        List<Source> list = Luo.getDefaultSource(session.getSourceDao(), app.getFilesDir().toString());
         list.add(IKanman.getDefaultSource());
         list.add(Dmzj.getDefaultSource());
         list.add(JMTT.getDefaultSource());
@@ -89,6 +79,7 @@ public class UpdateHelper {
         list.add(MHLove.getDefaultSource());
         list.add(GuFeng.getDefaultSource());
         list.add(YYLS.getDefaultSource());
+        list.add(Pica.getDefaultSource());
         session.getSourceDao().insertOrReplaceInTx(list);
     }
 }

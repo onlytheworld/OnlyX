@@ -1,20 +1,20 @@
 package com.OnlyX.ui.widget.preference;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
-import androidx.appcompat.widget.AppCompatCheckBox;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import androidx.appcompat.widget.AppCompatCheckBox;
+
 import com.OnlyX.App;
 import com.OnlyX.R;
 import com.OnlyX.manager.PreferenceManager;
-
-import butterknife.ButterKnife;
 
 /**
  * Created by Hiroshi on 2017/1/10.
@@ -23,7 +23,7 @@ import butterknife.ButterKnife;
 public class CheckBoxPreference extends FrameLayout implements View.OnClickListener {
 
     private AppCompatCheckBox mCheckBox;
-    private PreferenceManager mPreferenceManager;
+    private final PreferenceManager mPreferenceManager;
     private String mPreferenceKey;
 
     public CheckBoxPreference(Context context) {
@@ -39,7 +39,7 @@ public class CheckBoxPreference extends FrameLayout implements View.OnClickListe
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         layoutInflater.inflate(R.layout.custom_option_checkbox, this);
 
-        mPreferenceManager = ((App) context.getApplicationContext()).getPreferenceManager();
+        mPreferenceManager = App.getPreferenceManager();
 
         init(context, attrs);
 
@@ -47,7 +47,7 @@ public class CheckBoxPreference extends FrameLayout implements View.OnClickListe
     }
 
     private void init(Context context, AttributeSet attrs) {
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.Option);
+        @SuppressLint("CustomViewStyleable") TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.Option);
         String title = typedArray.getString(R.styleable.Option_title);
         String summary = typedArray.getString(R.styleable.Option_summary);
 
@@ -75,6 +75,7 @@ public class CheckBoxPreference extends FrameLayout implements View.OnClickListe
         mCheckBox.setChecked(mPreferenceManager.getBoolean(key, def));
     }
 
+    @SuppressLint("RestrictedApi")
     public void setColorStateList(ColorStateList stateList) {
         mCheckBox.setSupportButtonTintList(stateList);
     }

@@ -1,10 +1,9 @@
 package com.OnlyX.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
-import androidx.appcompat.widget.AppCompatSpinner;
-import androidx.appcompat.widget.SwitchCompat;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
@@ -16,11 +15,8 @@ import com.OnlyX.manager.PreferenceManager;
 import com.OnlyX.presenter.AboutPresenter;
 import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.ui.view.AboutView;
-import com.OnlyX.utils.HintUtils;
 import com.OnlyX.utils.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -31,22 +27,22 @@ import butterknife.OnClick;
 
 public class AboutActivity extends BackActivity implements AboutView, AdapterView.OnItemSelectedListener {
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.about_update_summary)
     TextView mUpdateText;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.about_version_name)
     TextView mVersionName;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.about_layout)
     View mLayoutView;
 
-    private AboutPresenter mPresenter;
-    private boolean update = false;
-    private boolean checking = false;
-
-    private List<String> listSources = new ArrayList<>();
+    protected void initData() {
+    }
 
     @Override
-    protected BasePresenter initPresenter() {
-        mPresenter = new AboutPresenter();
+    protected BasePresenter<AboutView> initPresenter() {
+        AboutPresenter mPresenter = new AboutPresenter();
         mPresenter.attachView(this);
         return mPresenter;
     }
@@ -62,6 +58,7 @@ public class AboutActivity extends BackActivity implements AboutView, AdapterVie
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.home_page_btn)
     void onHomeClick() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.home_page_url)));
@@ -82,6 +79,7 @@ public class AboutActivity extends BackActivity implements AboutView, AdapterVie
 //        }
 //    }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.about_support_btn)
     void onSupportClick() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.about_support_url)));
@@ -92,6 +90,7 @@ public class AboutActivity extends BackActivity implements AboutView, AdapterVie
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.about_resource_btn)
     void onResourceClick() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.about_resource_url)));
@@ -102,6 +101,7 @@ public class AboutActivity extends BackActivity implements AboutView, AdapterVie
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.about_resource_ori_btn)
     void onOriResourceClick() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.about_resource_ori_url)));
@@ -112,6 +112,7 @@ public class AboutActivity extends BackActivity implements AboutView, AdapterVie
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.about_update_btn)
     void onUpdateClick() {
 //        if (update) {
@@ -135,27 +136,6 @@ public class AboutActivity extends BackActivity implements AboutView, AdapterVie
     }
 
     @Override
-    public void onUpdateNone() {
-        mUpdateText.setText(R.string.about_update_latest);
-        HintUtils.showToast(this, R.string.about_update_latest);
-        checking = false;
-    }
-
-    @Override
-    public void onUpdateReady() {
-//        mUpdateText.setText(R.string.about_update_download);
-        update();
-        checking = false;
-        update = true;
-    }
-
-    @Override
-    public void onCheckError() {
-        mUpdateText.setText(R.string.about_update_fail);
-        checking = false;
-    }
-
-    @Override
     protected String getDefaultTitle() {
         return getString(R.string.drawer_about);
     }
@@ -172,7 +152,7 @@ public class AboutActivity extends BackActivity implements AboutView, AdapterVie
 
     private void update() {
 //        if (Update.update(this)) {
-            mUpdateText.setText(R.string.about_update_summary);
+        mUpdateText.setText(R.string.about_update_summary);
 //        } else {
 //            showSnackbar(R.string.about_resource_fail);
 //        }
@@ -187,12 +167,10 @@ public class AboutActivity extends BackActivity implements AboutView, AdapterVie
                 break;
             case 1:
                 App.setUpdateCurrentUrl(Constants.UPDATE_GITHUB_URL);
-                update = false;
                 App.getPreferenceManager().putString(PreferenceManager.PREF_UPDATE_CURRENT_URL, App.getUpdateCurrentUrl());
                 break;
             case 2:
                 App.setUpdateCurrentUrl(Constants.UPDATE_GITEE_URL);
-                update = false;
                 App.getPreferenceManager().putString(PreferenceManager.PREF_UPDATE_CURRENT_URL, App.getUpdateCurrentUrl());
                 break;
         }
@@ -203,15 +181,4 @@ public class AboutActivity extends BackActivity implements AboutView, AdapterVie
 
     }
 
-    private void checkSpinnerSelected(AppCompatSpinner spinner) {
-        try {
-            if (App.getPreferenceManager().getString(PreferenceManager.PREF_UPDATE_CURRENT_URL).equals(Constants.UPDATE_GITHUB_URL)) {
-                spinner.setSelection(1);
-            } else if (App.getPreferenceManager().getString(PreferenceManager.PREF_UPDATE_CURRENT_URL).equals(Constants.UPDATE_GITEE_URL)) {
-                spinner.setSelection(2);
-            }
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-    }
 }

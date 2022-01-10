@@ -8,35 +8,23 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.ColorRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.StyleRes;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.navigation.NavigationView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.facebook.drawee.interfaces.DraweeController;
-import com.facebook.drawee.view.SimpleDraweeView;
-import com.facebook.imagepipeline.common.ResizeOptions;
-import com.facebook.imagepipeline.request.ImageRequest;
-import com.facebook.imagepipeline.request.ImageRequestBuilder;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
+import androidx.annotation.ColorRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StyleRes;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.OnlyX.App;
 import com.OnlyX.R;
 import com.OnlyX.component.ThemeResponsive;
@@ -53,9 +41,16 @@ import com.OnlyX.ui.fragment.recyclerview.SourceFragment;
 import com.OnlyX.ui.view.MainView;
 import com.OnlyX.utils.HintUtils;
 import com.OnlyX.utils.PermissionUtils;
+import com.facebook.drawee.interfaces.DraweeController;
+import com.facebook.drawee.view.SimpleDraweeView;
+import com.facebook.imagepipeline.common.ResizeOptions;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 
 //auth0
 
@@ -99,7 +94,7 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
 //    private Auth0 auth0;
 
     @Override
-    protected BasePresenter initPresenter() {
+    protected BasePresenter<MainView> initPresenter() {
         mPresenter = new MainPresenter();
         mPresenter.attachView(this);
         return mPresenter;
@@ -110,6 +105,17 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
         initDrawerToggle();
         initNavigation();
         initFragment();
+        mPresenter.loadLast();
+
+        //检查App更新
+        String updateUrl;
+        if (mPreference.getBoolean(PreferenceManager.PREF_UPDATE_APP_AUTO, true)) {
+            if ((updateUrl = App.getPreferenceManager().getString(PreferenceManager.PREF_UPDATE_CURRENT_URL)) != null) {
+                App.setUpdateCurrentUrl(updateUrl);
+            }
+
+            checkUpdate();
+        }
     }
 
 //    private void login() {
@@ -177,19 +183,6 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
 //        }
 //    }
 
-    @Override
-    protected void initData() {
-        mPresenter.loadLast();
-
-        //检查App更新
-        String updateUrl = null;
-        if (mPreference.getBoolean(PreferenceManager.PREF_UPDATE_APP_AUTO, true)) {
-            if ((updateUrl = App.getPreferenceManager().getString(PreferenceManager.PREF_UPDATE_CURRENT_URL)) != null) {
-                App.setUpdateCurrentUrl(updateUrl);
-            }
-            checkUpdate();
-        }
-    }
 
 //    public void getUesrInfo() {
 //        String accessTocken = mPreference.getString(PreferenceManager.PREFERENCES_USER_TOCKEN, null);
@@ -230,9 +223,9 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
             public void onDrawerClosed(View drawerView) {
                 super.onDrawerClosed(drawerView);
                 if (refreshCurrentFragment()) {
-                    getFragmentManager().beginTransaction().show(mCurrentFragment).commit();
+                    getSupportFragmentManager().beginTransaction().show(mCurrentFragment).commit();
                 } else {
-                    getFragmentManager().beginTransaction().add(R.id.main_fragment_container, mCurrentFragment).commit();
+                    getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container, mCurrentFragment).commit();
                 }
             }
         };
@@ -252,22 +245,19 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
         View header = mNavigationView.getHeaderView(0);
         mLastText = header.findViewById(R.id.drawer_last_title);
         mDraweeView = header.findViewById(R.id.drawer_last_cover);
-        mLastText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mPresenter.checkLocal(mLastId)) {
-                    Intent intent = TaskActivity.createIntent(MainActivity.this, mLastId);
-                    startActivity(intent);
-                } else if (mLastSource != -1 && mLastCid != null) {
-                    Intent intent = DetailActivity.createIntent(MainActivity.this, null, mLastSource, mLastCid);
-                    startActivity(intent);
-                } else {
-                    HintUtils.showToast(MainActivity.this, R.string.common_execute_fail);
-                }
+        mLastText.setOnClickListener(v -> {
+            if (mPresenter.checkLocal(mLastId)) {
+                Intent intent = TaskActivity.createIntent(MainActivity.this, mLastId);
+                startActivity(intent);
+            } else if (mLastSource != -1 && mLastCid != null) {
+                Intent intent = DetailActivity.createIntent(MainActivity.this, null, mLastSource, mLastCid);
+                startActivity(intent);
+            } else {
+                HintUtils.showToast(MainActivity.this, R.string.common_execute_fail);
             }
         });
         mControllerBuilderProvider = new ControllerBuilderProvider(this,
-                SourceManager.getInstance(this).new HeaderGetter(), false);
+                SourceManager.getInstance(this).new SMGetter(), false);
     }
 
     private void initFragment() {
@@ -289,7 +279,7 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
         mNavigationView.setCheckedItem(mCheckItem);
         mFragmentArray = new SparseArray<>(FRAGMENT_NUM);
         refreshCurrentFragment();
-        getFragmentManager().beginTransaction().add(R.id.main_fragment_container, mCurrentFragment).commit();
+        getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container, mCurrentFragment).commit();
     }
 
     private boolean refreshCurrentFragment() {
@@ -327,7 +317,7 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
     }
 
@@ -352,13 +342,13 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
                 case R.id.drawer_source:
 //                case R.id.drawer_tag:
                     mCheckItem = itemId;
-                    getFragmentManager().beginTransaction().hide(mCurrentFragment).commit();
+                    getSupportFragmentManager().beginTransaction().hide(mCurrentFragment).commit();
                     if (mToolbar != null) {
                         mToolbar.setTitle(item.getTitle().toString());
                     }
                     mDrawerLayout.closeDrawer(GravityCompat.START);
                     break;
-                case R.id.drawer_comiclist:
+                case R.id.drawer_comic_list:
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.home_page_comiclist_url)));
                     try {
                         startActivity(intent);
@@ -392,16 +382,14 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
         super.onActivityResult(requestCode, resultCode, data);
         mCurrentFragment.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_ACTIVITY_SETTINGS:
-                    int[] result = data.getIntArrayExtra(Extra.EXTRA_RESULT);
-                    if (result[0] == 1) {
-                        changeTheme(result[1], result[2], result[3]);
-                    }
-                    if (result[4] == 1 && mNightMask != null) {
-                        mNightMask.setBackgroundColor(result[5] << 24);
-                    }
-                    break;
+            if (requestCode == REQUEST_ACTIVITY_SETTINGS) {
+                int[] result = data.getIntArrayExtra(Extra.EXTRA_RESULT);
+                if (result[0] == 1) {
+                    changeTheme(result[1], result[2], result[3]);
+                }
+                if (result[4] == 1 && mNightMask != null) {
+                    mNightMask.setBackgroundColor(result[5] << 24);
+                }
             }
         }
     }
@@ -425,15 +413,13 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case 0:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    ((App) getApplication()).initRootDocumentFile();
-                    HintUtils.showToast(this, R.string.main_permission_success);
-                } else {
-                    HintUtils.showToast(this, R.string.main_permission_fail);
-                }
-                break;
+        if (requestCode == 0) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                ((App) getApplication()).initRootDocumentFile();
+                HintUtils.showToast(this, R.string.main_permission_success);
+            } else {
+                HintUtils.showToast(this, R.string.main_permission_fail);
+            }
         }
     }
 
@@ -507,38 +493,32 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
         mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
         mFirebaseRemoteConfig.setDefaultsAsync(R.xml.remote_config);
         mFirebaseRemoteConfig.fetchAndActivate()
-                .addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Boolean> task) {
-                        if (task.isSuccessful()) {
-                            boolean updated = task.getResult();
-                            Log.d("FireBase_FirstOpenMsg", "Config params updated: " + updated);
-                        } else {
-                            Log.d("FireBase_FirstOpenMsg", "Config params updated Failed. ");
-                        }
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        boolean updated = task.getResult();
+                        Log.d("FireBase_FirstOpenMsg", "Config params updated: " + updated);
+                    } else {
+                        Log.d("FireBase_FirstOpenMsg", "Config params updated Failed. ");
+                    }
 
-                        String showMsg = mFirebaseRemoteConfig.getString("first_open_msg");
-                        if (!mPreference.getBoolean(PreferenceManager.PREF_MAIN_NOTICE, false)
-                                || showMsg.compareTo(mPreference.getString(PreferenceManager.PREF_MAIN_NOTICE_LAST, "")) != 0) {
-                            mPreference.putString(PreferenceManager.PREF_MAIN_NOTICE_LAST, showMsg);
-                            MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.main_notice,
-                                    showMsg, false, DIALOG_REQUEST_NOTICE);
-                            fragment.show(getFragmentManager(), null);
-                        }
+                    String showMsg = mFirebaseRemoteConfig.getString("first_open_msg");
+                    if (!mPreference.getBoolean(PreferenceManager.PREF_MAIN_NOTICE, false)
+                            || showMsg.compareTo(mPreference.getString(PreferenceManager.PREF_MAIN_NOTICE_LAST, "")) != 0) {
+                        mPreference.putString(PreferenceManager.PREF_MAIN_NOTICE_LAST, showMsg);
+                        MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.main_notice,
+                                showMsg, false, DIALOG_REQUEST_NOTICE);
+                        fragment.show(getSupportFragmentManager(), null);
                     }
                 });
 
-        if (!mPreference.getBoolean(PreferenceManager.PREF_MAIN_NOTICE, false)) {
-            return true;
-        }
-        return false;
+        return !mPreference.getBoolean(PreferenceManager.PREF_MAIN_NOTICE, false);
     }
 
     private void showPermission() {
         if (!PermissionUtils.hasStoragePermission(this)) {
             MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.main_permission,
                     R.string.main_permission_content, false, DIALOG_REQUEST_PERMISSION);
-            fragment.show(getFragmentManager(), null);
+            fragment.show(getSupportFragmentManager(), null);
         }
     }
 
@@ -551,6 +531,7 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
         }
     }
 
+    // 疑似这里的 HOME_SOURCE 与 HOME_TAG 已被遗弃
     @Override
     protected String getDefaultTitle() {
         int home = mPreference.getInt(PreferenceManager.PREF_OTHER_LAUNCH, PreferenceManager.HOME_FAVORITE);
@@ -568,7 +549,7 @@ public class MainActivity extends BaseActivity implements MainView, NavigationVi
         }
     }
 
-    @Override
+
     protected int getLayoutRes() {
         return R.layout.activity_main;
     }

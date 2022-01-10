@@ -1,20 +1,28 @@
 package com.OnlyX.ui.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Rect;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilderSupplier;
-import com.facebook.drawee.view.SimpleDraweeView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.OnlyX.R;
+import com.OnlyX.manager.SourceManager;
 import com.OnlyX.model.Chapter;
 import com.OnlyX.ui.widget.ChapterButton;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.load.model.LazyHeaders;
+import com.facebook.drawee.view.SimpleDraweeView;
 
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.BindView;
 
@@ -23,26 +31,32 @@ import butterknife.BindView;
  */
 public class DetailAdapter extends BaseAdapter<Chapter> {
 
-    private PipelineDraweeControllerBuilderSupplier mControllerSupplier;
+//    private PipelineDraweeControllerBuilderSupplier mControllerSupplier;
+
+    private SourceManager.SMGetter mSMGetter;
+    RequestManager mGlide;
 
     public String title;
     private String cover;
     private String update;
     private String author;
     public String intro;
+    private String tags;
     private Boolean finish;
 
     private String last;
+    private int source;
 
     public DetailAdapter(Context context, List<Chapter> list) {
         super(context, list);
+        mGlide = Glide.with(context);
     }
 
     @Override
     public RecyclerView.ItemDecoration getItemDecoration() {
         return new RecyclerView.ItemDecoration() {
             @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
                 int position = parent.getChildLayoutPosition(view);
                 if (position == 0) {
                     outRect.set(0, 0, 0, 10);
@@ -61,40 +75,54 @@ public class DetailAdapter extends BaseAdapter<Chapter> {
 
     @Override
     public int getItemCount() {
-        return mDataSet.size() + 1;
+        return size() + 1;
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == 0) {
-            View view = mInflater.inflate(R.layout.item_chapter_header, parent, false);
+            View view = inflate(R.layout.item_chapter_header, parent, false);
             return new HeaderHolder(view);
         }
-        View view = mInflater.inflate(R.layout.item_chapter, parent, false);
+        View view = inflate(R.layout.item_chapter, parent, false);
         return new ChapterHolder(view);
     }
 
-    public void setInfo(String cover, String title, String author, String intro, Boolean finish, String update, String last) {
+    public void setInfo(String cover, String title, String author, String intro,
+                        Boolean finish, String update, String last, int source) {
         this.cover = cover;
         this.title = title;
-        this.intro = intro;
+        String[] intros = intro.split("@@");
+        this.intro = intros[0];
         this.finish = finish;
         this.update = update;
         this.author = author;
         this.last = last;
+        this.tags = intros.length == 1 ? "" : intros[1];
+        this.source = source;
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         if (position == 0) {
             HeaderHolder headerHolder = (HeaderHolder) holder;
             if (title != null) {
                 if (cover != null) {
-                    headerHolder.mComicImage.setController(mControllerSupplier.get().setUri(cover).build());
+                    String referer = mSMGetter.getHeader(source).get("Referer");
+                    String ua = mSMGetter.getHeader(source).get("User-Agent");
+                    GlideUrl url = new GlideUrl(cover, new LazyHeaders.Builder()
+                            .addHeader("Referer", referer == null ? "" : referer)
+                            .addHeader("User-Agent", ua == null ? "" : ua)
+                            .build());
+
+                    mGlide.load(url).into(headerHolder.mComicImage);
+//                    headerHolder.mComicImage.setController(mControllerSupplier.get().setUri(cover).build());
                 }
                 headerHolder.mComicTitle.setText(title);
                 headerHolder.mComicIntro.setText(intro);
+                headerHolder.mComicTags.setText(tags);
                 if (finish != null) {
                     headerHolder.mComicStatus.setText(finish ? "完结" : "连载中");
                 }
@@ -104,7 +132,7 @@ public class DetailAdapter extends BaseAdapter<Chapter> {
                 headerHolder.mComicAuthor.setText(author);
             }
         } else {
-            Chapter chapter = mDataSet.get(position - 1);
+            Chapter chapter = get(position - 1);
             ChapterHolder viewHolder = (ChapterHolder) holder;
             viewHolder.chapterButton.setText(chapter.getTitle());
             viewHolder.chapterButton.setDownload(chapter.isComplete());
@@ -117,10 +145,10 @@ public class DetailAdapter extends BaseAdapter<Chapter> {
     }
 
     @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
         final GridLayoutManager manager = (GridLayoutManager) recyclerView.getLayoutManager();
-        manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+        Objects.requireNonNull(manager).setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
                 return position == 0 ? manager.getSpanCount() : 1;
@@ -128,8 +156,11 @@ public class DetailAdapter extends BaseAdapter<Chapter> {
         });
     }
 
-    public void setControllerSupplier(PipelineDraweeControllerBuilderSupplier supplier) {
-        this.mControllerSupplier = supplier;
+    //    public void setControllerSupplier(PipelineDraweeControllerBuilderSupplier supplier) {
+//        this.mControllerSupplier = supplier;
+//    }
+    public void setSMGetter(SourceManager.SMGetter getter) {
+        mSMGetter = getter;
     }
 
     public void setLast(String value) {
@@ -138,8 +169,8 @@ public class DetailAdapter extends BaseAdapter<Chapter> {
         }
         String temp = last;
         last = value;
-        for (int i = 0; i != mDataSet.size(); ++i) {
-            String path = mDataSet.get(i).getPath();
+        for (int i = 0; i != size(); ++i) {
+            String path = get(i).getPath();
             if (path.equals(last)) {
                 notifyItemChanged(i + 1);
             } else if (path.equals(temp)) {
@@ -149,6 +180,7 @@ public class DetailAdapter extends BaseAdapter<Chapter> {
     }
 
     static class ChapterHolder extends BaseViewHolder {
+        @SuppressLint("NonConstantResourceId")
         @BindView(R.id.item_chapter_button)
         ChapterButton chapterButton;
 
@@ -157,7 +189,7 @@ public class DetailAdapter extends BaseAdapter<Chapter> {
         }
     }
 
-    class HeaderHolder extends BaseViewHolder {
+    static class HeaderHolder extends BaseViewHolder {
         @BindView(R.id.item_header_comic_image)
         SimpleDraweeView mComicImage;
         @BindView(R.id.item_header_comic_title)
@@ -170,6 +202,8 @@ public class DetailAdapter extends BaseAdapter<Chapter> {
         TextView mComicUpdate;
         @BindView(R.id.item_header_comic_author)
         TextView mComicAuthor;
+        @BindView(R.id.item_header_comic_tag)
+        TextView mComicTags;
 
         HeaderHolder(View view) {
             super(view);

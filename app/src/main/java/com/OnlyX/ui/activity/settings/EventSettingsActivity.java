@@ -1,5 +1,7 @@
 package com.OnlyX.ui.activity.settings;
 
+import static com.OnlyX.manager.PreferenceManager.READER_ORIENTATION_AUTO;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -8,7 +10,6 @@ import android.os.Bundle;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 
@@ -16,14 +17,13 @@ import com.OnlyX.R;
 import com.OnlyX.component.DialogCaller;
 import com.OnlyX.global.ClickEvents;
 import com.OnlyX.global.Extra;
+import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.ui.activity.BaseActivity;
 import com.OnlyX.ui.fragment.dialog.ChoiceDialogFragment;
 
 import java.util.List;
 
 import butterknife.BindViews;
-
-import static com.OnlyX.manager.PreferenceManager.READER_ORIENTATION_AUTO;
 
 /**
  * Created by Hiroshi on 2016/10/9.
@@ -53,7 +53,7 @@ public class EventSettingsActivity extends BaseActivity implements DialogCaller 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
         }
-        final int oArray[] = {ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED};
+        final int[] oArray = {ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED};
         int value = oArray[getIntent().getIntExtra(Extra.EXTRA_IS_PORTRAIT, READER_ORIENTATION_AUTO)];
         setRequestedOrientation(value);
     }
@@ -75,12 +75,7 @@ public class EventSettingsActivity extends BaseActivity implements DialogCaller 
         for (int i = 0; i != 5; ++i) {
             final int index = i;
             mButtonList.get(i).setText(ClickEvents.getEventTitle(this, mChoiceArray[i]));
-            mButtonList.get(i).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showEventList(index);
-                }
-            });
+            mButtonList.get(i).setOnClickListener(v -> showEventList(index));
         }
     }
 
@@ -146,33 +141,33 @@ public class EventSettingsActivity extends BaseActivity implements DialogCaller 
             // earliest historical position in the batch
             for (int i = 0; i < historySize; i++) {
                 // Process the event at historical position i
-                processJoystickInput(event, i);
+                processJoystickInput(event);
             }
 
             // Process the current movement sample in the batch (position -1)
-            processJoystickInput(event, -1);
+            processJoystickInput(event);
             return true;
         }
         return super.onGenericMotionEvent(event);
     }
 
-    private boolean JoyLock[] = {false, false};
-    private int JoyEvent[] = {7, 8};
-    private final float thredhold = 0.3f;
+    private final boolean[] JoyLock = {false, false};
+    private final int[] JoyEvent = {7, 8};
 
     private void checkKey(float val, ClickEvents.JoyLocks joy) {
         //unlock
-        if (JoyLock[joy.ordinal()] && val < this.thredhold) {
+        float thredhold = 0.3f;
+        if (JoyLock[joy.ordinal()] && val < thredhold) {
             JoyLock[joy.ordinal()] = false;
         }
         //lock
-        if(!JoyLock[joy.ordinal()] && val > this.thredhold){
+        if (!JoyLock[joy.ordinal()] && val > thredhold) {
             JoyLock[joy.ordinal()] = true;
             showEventList(JoyEvent[joy.ordinal()]);
         }
     }
 
-    private void processJoystickInput(MotionEvent event, int historyPos) {
+    private void processJoystickInput(MotionEvent event) {
         checkKey(event.getAxisValue(MotionEvent.AXIS_GAS), ClickEvents.JoyLocks.RT);
         checkKey(event.getAxisValue(MotionEvent.AXIS_BRAKE), ClickEvents.JoyLocks.LT);
     }
@@ -180,7 +175,7 @@ public class EventSettingsActivity extends BaseActivity implements DialogCaller 
     private void showEventList(int index) {
         ChoiceDialogFragment fragment = ChoiceDialogFragment.newInstance(R.string.event_select,
                 ClickEvents.getEventTitleArray(this), mChoiceArray[index], index);
-        fragment.show(getFragmentManager(), null);
+        fragment.show(getSupportFragmentManager(), null);
     }
 
     @Override
@@ -197,5 +192,11 @@ public class EventSettingsActivity extends BaseActivity implements DialogCaller 
     protected int getLayoutRes() {
         return R.layout.activity_event;
     }
-
+    @Override
+    protected String getDefaultTitle() {
+        return null;
+    }
+    @Override
+    protected BasePresenter initPresenter() {return null;
+    }
 }

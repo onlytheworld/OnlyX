@@ -8,7 +8,6 @@ import com.OnlyX.parser.SearchIterator;
 
 import java.util.List;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -19,7 +18,6 @@ public class Null extends MangaParser {
 
     public static final int TYPE = -1;
     public static final String DEFAULT_TITLE = "(null)";
-    public static final String DEFAULT_SERVER = null;
 
     public Null() {
         mTitle = DEFAULT_TITLE;
@@ -71,11 +69,6 @@ public class Null extends MangaParser {
 
     @Override
     public List<Comic> parseCategory(String html, int page) {
-        return null;
-    }
-
-    @Override
-    public Headers getHeader() {
         return null;
     }
 

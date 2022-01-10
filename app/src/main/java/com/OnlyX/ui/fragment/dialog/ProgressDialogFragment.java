@@ -1,16 +1,18 @@
 package com.OnlyX.ui.fragment.dialog;
 
-import android.app.DialogFragment;
+import android.annotation.SuppressLint;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 
 import com.OnlyX.R;
 import com.OnlyX.rx.RxBus;
@@ -20,7 +22,6 @@ import com.OnlyX.utils.ThemeUtils;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 
 /**
@@ -29,8 +30,10 @@ import rx.subscriptions.CompositeSubscription;
 
 public class ProgressDialogFragment extends DialogFragment {
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.dialog_progress_bar)
     ProgressBar mProgressBar;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.dialog_progress_text)
     TextView mTextView;
 
@@ -46,17 +49,12 @@ public class ProgressDialogFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.dialog_progress, container, false);
         unbinder = ButterKnife.bind(this, view);
-        getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
+        requireDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         setCancelable(false);
-        int resId = ThemeUtils.getResourceId(getActivity(), R.attr.colorAccent);
-        mProgressBar.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(getActivity(), resId), PorterDuff.Mode.SRC_ATOP);
+        int resId = ThemeUtils.getResourceId(requireActivity(), R.attr.colorAccent);
+        mProgressBar.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(requireActivity(), resId), PorterDuff.Mode.SRC_ATOP);
         mCompositeSubscription = new CompositeSubscription();
-        mCompositeSubscription.add(RxBus.getInstance().toObservable(RxEvent.EVENT_DIALOG_PROGRESS).subscribe(new Action1<RxEvent>() {
-            @Override
-            public void call(RxEvent rxEvent) {
-                mTextView.setText((String) rxEvent.getData());
-            }
-        }));
+        mCompositeSubscription.add(RxBus.getInstance().toObservable(RxEvent.EVENT_DIALOG_PROGRESS).subscribe(rxEvent -> mTextView.setText((String) rxEvent.getData())));
         return view;
     }
 

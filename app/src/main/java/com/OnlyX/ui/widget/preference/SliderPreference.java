@@ -1,7 +1,8 @@
 package com.OnlyX.ui.widget.preference;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.annotation.SuppressLint;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.Fragment;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
@@ -21,7 +22,7 @@ import com.OnlyX.ui.widget.Option;
 
 public class SliderPreference extends Option implements View.OnClickListener {
 
-    private PreferenceManager mPreferenceManager;
+    private final PreferenceManager mPreferenceManager;
     private FragmentManager mFragmentManager;
     private Fragment mTargetFragment;
     private String mPreferenceKey;
@@ -43,7 +44,7 @@ public class SliderPreference extends Option implements View.OnClickListener {
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         layoutInflater.inflate(R.layout.custom_option, this);
 
-        mPreferenceManager = ((App) context.getApplicationContext()).getPreferenceManager();
+        mPreferenceManager = App.getPreferenceManager();
 
         initRange(context, attrs);
 
@@ -51,7 +52,7 @@ public class SliderPreference extends Option implements View.OnClickListener {
     }
 
     private void initRange(Context context, AttributeSet attrs) {
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.Preference);
+        @SuppressLint("CustomViewStyleable") TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.Preference);
 
         mMin = typedArray.getInt(R.styleable.Preference_min, -1);
         mMax = typedArray.getInt(R.styleable.Preference_max, -1);

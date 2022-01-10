@@ -19,13 +19,14 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -34,7 +35,9 @@ import okhttp3.Request;
 public class Dmzj extends MangaParser {
 
     public static final int TYPE = 1;
+
     public static final String DEFAULT_TITLE = "动漫之家";
+    String commitUrl = "http://v3api.dmzj.com/viewPoint/0/${comic_id}/${chapter_id}.json";
 
     public Dmzj(Source source) {
         init(source, new Category());
@@ -47,7 +50,7 @@ public class Dmzj extends MangaParser {
     @Override
     public Request getSearchRequest(String keyword, int page) {
         if (page == 1) {
-            String url = StringUtils.format("http://s.acg.dmzj.com/comicsum/search.php?s=%s", keyword, page - 1);
+            String url = StringUtils.format("http://s.acg.dmzj.com/comicsum/search.php?s=%s", keyword, 0);
             return new Request.Builder().url(url).build();
         }
         return null;
@@ -69,7 +72,8 @@ public class Dmzj extends MangaParser {
                         String title = object.getString("comic_name");
                         String cover = object.getString("cover");
                         String author = object.optString("comic_author");
-                        return new Comic(TYPE, cid, title, cover, null, author);
+                        String update = object.optString("last_update_chapter_name");
+                        return new Comic(TYPE, cid, title, cover, update, author);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -103,9 +107,9 @@ public class Dmzj extends MangaParser {
             String cover = info.getString("cover");
             Long time = info.has("last_updatetime") ? info.getLong("last_updatetime") * 1000 : null;
             String update = time == null ? null : StringUtils.getFormatTime("yyyy-MM-dd", time);
-            String intro = info.optString("description");
+            String intro = info.optString("description") + "@@" + info.optString("types");
             String authors = info.getString("authors");
-            boolean status = info.getString("status")=="连载中"?true:false;
+            boolean status = !info.getString("status").equals("连载中");
             comic.setInfo(title, cover, update, intro, authors, status);
         } catch (Exception e) {
             e.printStackTrace();
@@ -143,7 +147,7 @@ public class Dmzj extends MangaParser {
             JSONObject object = new JSONObject(html);
             JSONArray array = object.getJSONArray("page_url");
             for (int i = 0; i < array.length(); ++i) {
-                list.add(new ImageUrl(i + 1, array.getString(i).replace("//g/","/g/"), false));
+                list.add(new ImageUrl(i + 1, array.getString(i).replace("//g/", "/g/"), false));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -159,7 +163,7 @@ public class Dmzj extends MangaParser {
     @Override
     public String parseCheck(String html) {
         try {
-            JSONObject object = new JSONObject(html);
+            JSONObject object = new JSONObject(html).getJSONObject("data").getJSONObject("info");
             long time = object.getLong("last_updatetime") * 1000;
             return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(time));
         } catch (Exception e) {
@@ -196,9 +200,12 @@ public class Dmzj extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://m.dmzj.com/");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://m.dmzj.com/");
+        return headers;
     }
+
 
     private static class Category extends MangaCategory {
 
@@ -212,6 +219,23 @@ public class Dmzj extends MangaParser {
             return StringUtils.format("http://m.dmzj.com/classify/%s-%s-%s-all-%s-%s-%%d.json",
                     args[CATEGORY_SUBJECT], args[CATEGORY_READER], args[CATEGORY_PROGRESS], args[CATEGORY_AREA], args[CATEGORY_ORDER]);
         }
+
+//        @Override
+//        public Request getCategoryListRequest(){
+//            String url = "https://v3api.dmzj.com/0/category.json";
+//            return new Request.Builder().url(url).build();
+//        }
+//
+//        @Override
+//        public List<Pair<String, List<Pair<String, String>>>> getCategoryList(String html){
+//            try {
+//                JSONObject object = new JSONObject(html);
+//                JSONArray data = object.getJSONArray("data");
+//
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
         @Override
         public List<Pair<String, String>> getSubject() {

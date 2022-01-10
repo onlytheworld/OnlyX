@@ -1,13 +1,10 @@
 package com.OnlyX.source;
 
-import android.util.Pair;
-
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
 import com.OnlyX.model.Source;
 import com.OnlyX.parser.JsonIterator;
-import com.OnlyX.parser.MangaCategory;
 import com.OnlyX.parser.MangaParser;
 import com.OnlyX.parser.SearchIterator;
 import com.OnlyX.parser.UrlFilter;
@@ -22,10 +19,13 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import okhttp3.FormBody;
@@ -42,11 +42,11 @@ public class DM5 extends MangaParser {
     public static final String DEFAULT_TITLE = "动漫屋";
 
     public DM5(Source source) {
-        init(source, new Category());
+        init(source, null);
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -223,7 +223,7 @@ public class DM5 extends MangaParser {
 
     @Override
     public Headers getHeader(String url) {
-        String cid = "m".concat(StringUtils.match("cid=(\\d+)", url, 1));
+        String cid = "m".concat(Objects.requireNonNull(StringUtils.match("cid=(\\d+)", url, 1)));
         return Headers.of("Referer", "http://m.dm5.com/".concat(cid));
     }
 
@@ -236,93 +236,100 @@ public class DM5 extends MangaParser {
         return Headers.of("Referer", "http://m.dm5.com/".concat(cid));
     }
 
-    private static class Category extends MangaCategory {
-
-        @Override
-        public boolean isComposite() {
-            return true;
-        }
-
-        @Override
-        public String getFormat(String... args) {
-            String path = args[CATEGORY_SUBJECT].concat(" ").concat(args[CATEGORY_AREA]).concat(" ").concat(args[CATEGORY_PROGRESS])
-                    .concat(" ").concat(args[CATEGORY_ORDER]).trim();
-            path = path.replaceAll("\\s+", "-");
-            return StringUtils.format("http://www.dm5.com/manhua-list-%s-p%%d", path);
-        }
-
-        @Override
-        protected List<Pair<String, String>> getSubject() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("热血", "tag31"));
-            list.add(Pair.create("恋爱", "tag26"));
-            list.add(Pair.create("校园", "tag1"));
-            list.add(Pair.create("百合", "tag3"));
-            list.add(Pair.create("耽美", "tag27"));
-            list.add(Pair.create("冒险", "tag2"));
-            list.add(Pair.create("后宫", "tag8"));
-            list.add(Pair.create("科幻", "tag25"));
-            list.add(Pair.create("战争", "tag12"));
-            list.add(Pair.create("悬疑", "tag17"));
-            list.add(Pair.create("推理", "tag33"));
-            list.add(Pair.create("搞笑", "tag37"));
-            list.add(Pair.create("奇幻", "tag14"));
-            list.add(Pair.create("魔法", "tag15"));
-            list.add(Pair.create("恐怖", "tag29"));
-            list.add(Pair.create("神鬼", "tag20"));
-            list.add(Pair.create("历史", "tag4"));
-            list.add(Pair.create("同人", "tag30"));
-            list.add(Pair.create("运动", "tag34"));
-            list.add(Pair.create("绅士", "tag36"));
-            list.add(Pair.create("机战", "tag40"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasArea() {
-            return true;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getArea() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("港台", "area35"));
-            list.add(Pair.create("日韩", "area36"));
-            list.add(Pair.create("内地", "area37"));
-            list.add(Pair.create("欧美", "area38"));
-            return list;
-        }
-
-        @Override
-        public boolean hasProgress() {
-            return true;
-        }
-
-        @Override
-        public List<Pair<String, String>> getProgress() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("连载", "st1"));
-            list.add(Pair.create("完结", "st2"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasOrder() {
-            return true;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getOrder() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("更新", "s2"));
-            list.add(Pair.create("人气", ""));
-            list.add(Pair.create("新品上架", "s18"));
-            return list;
-        }
-
+    @Override
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://m.dm5.com/");
+        return headers;
     }
+//
+//    private static class Category extends MangaCategory {
+//
+//        @Override
+//        public boolean isComposite() {
+//            return true;
+//        }
+//
+//        @Override
+//        public String getFormat(String... args) {
+//            String path = args[CATEGORY_SUBJECT].concat(" ").concat(args[CATEGORY_AREA]).concat(" ").concat(args[CATEGORY_PROGRESS])
+//                    .concat(" ").concat(args[CATEGORY_ORDER]).trim();
+//            path = path.replaceAll("\\s+", "-");
+//            return StringUtils.format("http://www.dm5.com/manhua-list-%s-p%%d", path);
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getSubject() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("热血", "tag31"));
+//            list.add(Pair.create("恋爱", "tag26"));
+//            list.add(Pair.create("校园", "tag1"));
+//            list.add(Pair.create("百合", "tag3"));
+//            list.add(Pair.create("耽美", "tag27"));
+//            list.add(Pair.create("冒险", "tag2"));
+//            list.add(Pair.create("后宫", "tag8"));
+//            list.add(Pair.create("科幻", "tag25"));
+//            list.add(Pair.create("战争", "tag12"));
+//            list.add(Pair.create("悬疑", "tag17"));
+//            list.add(Pair.create("推理", "tag33"));
+//            list.add(Pair.create("搞笑", "tag37"));
+//            list.add(Pair.create("奇幻", "tag14"));
+//            list.add(Pair.create("魔法", "tag15"));
+//            list.add(Pair.create("恐怖", "tag29"));
+//            list.add(Pair.create("神鬼", "tag20"));
+//            list.add(Pair.create("历史", "tag4"));
+//            list.add(Pair.create("同人", "tag30"));
+//            list.add(Pair.create("运动", "tag34"));
+//            list.add(Pair.create("绅士", "tag36"));
+//            list.add(Pair.create("机战", "tag40"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasArea() {
+//            return true;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getArea() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("港台", "area35"));
+//            list.add(Pair.create("日韩", "area36"));
+//            list.add(Pair.create("内地", "area37"));
+//            list.add(Pair.create("欧美", "area38"));
+//            return list;
+//        }
+//
+//        @Override
+//        public boolean hasProgress() {
+//            return true;
+//        }
+//
+//        @Override
+//        public List<Pair<String, String>> getProgress() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("连载", "st1"));
+//            list.add(Pair.create("完结", "st2"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasOrder() {
+//            return true;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getOrder() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("更新", "s2"));
+//            list.add(Pair.create("人气", ""));
+//            list.add(Pair.create("新品上架", "s18"));
+//            return list;
+//        }
+//
+//    }
 
 }

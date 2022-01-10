@@ -1,11 +1,13 @@
 package com.OnlyX.ui.adapter;
 
 import android.content.Context;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.OnlyX.R;
 import com.OnlyX.misc.Switcher;
@@ -25,17 +27,18 @@ public class TagEditorAdapter extends BaseAdapter<Switcher<Tag>> {
         super(context, list);
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.item_select, parent, false);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = inflate(R.layout.item_select, parent, false);
         return new TagHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         TagHolder viewHolder = (TagHolder) holder;
-        Switcher<Tag> switcher = mDataSet.get(position);
+        Switcher<Tag> switcher = get(position);
         viewHolder.tagTitle.setText(switcher.getElement().getTitle());
         viewHolder.tagChoice.setChecked(switcher.isEnable());
     }
@@ -45,10 +48,10 @@ public class TagEditorAdapter extends BaseAdapter<Switcher<Tag>> {
         return null;
     }
 
-    @Override
-    protected boolean isClickValid() {
-        return true;
-    }
+//    @Override
+//    protected boolean isClickValid() {
+//        return true;
+//    }
 
     static class TagHolder extends BaseAdapter.BaseViewHolder {
         @BindView(R.id.item_select_title)

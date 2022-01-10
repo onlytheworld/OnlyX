@@ -1,5 +1,6 @@
 package com.OnlyX.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Environment;
@@ -7,6 +8,7 @@ import android.view.View;
 
 import com.OnlyX.R;
 import com.OnlyX.global.Extra;
+import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.ui.adapter.BaseAdapter;
 import com.OnlyX.ui.adapter.DirAdapter;
 
@@ -14,6 +16,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.OnClick;
 
@@ -28,7 +31,7 @@ public class DirPickerActivity extends CoordinatorActivity {
 
     @Override
     protected BaseAdapter initAdapter() {
-        mDirAdapter = new DirAdapter(this, new ArrayList<String>());
+        mDirAdapter = new DirAdapter(this, new ArrayList<>());
         return mDirAdapter;
     }
 
@@ -39,12 +42,13 @@ public class DirPickerActivity extends CoordinatorActivity {
     }
 
     @Override
-    protected void initData() {
+    protected void initView() {
         mFile = Environment.getExternalStorageDirectory();
         updateData();
         hideProgressBar();
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.coordinator_action_button)
     void onActionButtonClick() {
         Intent intent = new Intent();
@@ -79,7 +83,7 @@ public class DirPickerActivity extends CoordinatorActivity {
         List<String> list = new ArrayList<>();
         File[] files = parent.listFiles();
         if (files != null) {
-            for (File dir : parent.listFiles()) {
+            for (File dir : Objects.requireNonNull(parent.listFiles())) {
                 if (dir.isDirectory()) {
                     list.add(dir.getName());
                 }
@@ -93,6 +97,10 @@ public class DirPickerActivity extends CoordinatorActivity {
     @Override
     protected String getDefaultTitle() {
         return getString(R.string.dir_picker);
+    }
+    @Override
+    protected BasePresenter initPresenter() {
+        return null;
     }
 
 }

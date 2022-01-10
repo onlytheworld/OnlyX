@@ -241,6 +241,12 @@
                     app:title="@string/settings_other_storage" />
 
                 <com.OnlyX.ui.widget.Option
+                    android:id="@+id/settings_import_source"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    app:title="@string/settings_import_source" />
+
+                <com.OnlyX.ui.widget.Option
                     android:id="@+id/settings_other_clear_cache"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

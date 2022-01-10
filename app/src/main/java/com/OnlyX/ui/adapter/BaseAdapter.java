@@ -1,9 +1,13 @@
 package com.OnlyX.ui.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.OnlyX.global.FastClick;
 
@@ -18,17 +22,27 @@ import butterknife.ButterKnife;
  */
 public abstract class BaseAdapter<T> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    Context mContext;
-    List<T> mDataSet;
-    LayoutInflater mInflater;
+    private final List<T> mDataSet;
+    private final LayoutInflater mInflater;
 
     private OnItemClickListener mClickListener;
     private OnItemLongClickListener mLongClickListener;
 
     public BaseAdapter(Context context, List<T> list) {
-        mContext = context.getApplicationContext();
         mDataSet = list;
         mInflater = LayoutInflater.from(context);
+    }
+
+    public View inflate(int layout, ViewGroup parent, boolean attach) {
+        return mInflater.inflate(layout, parent, attach);
+    }
+
+    public T get(int position) {
+        return mDataSet.get(position);
+    }
+
+    public int size() {
+        return mDataSet.size();
     }
 
     public void add(T data) {
@@ -53,7 +67,7 @@ public abstract class BaseAdapter<T> extends RecyclerView.Adapter<RecyclerView.V
     }
 
     public boolean exist(T data) {
-        return mDataSet.indexOf(data) != -1;
+        return mDataSet.contains(data);
     }
 
     public boolean remove(T data) {
@@ -70,20 +84,17 @@ public abstract class BaseAdapter<T> extends RecyclerView.Adapter<RecyclerView.V
         notifyItemRemoved(position);
     }
 
-    public void removeAll(Collection<T> collection) {
-        mDataSet.removeAll(collection);
-        notifyDataSetChanged();
-    }
-
     public boolean contains(T data) {
         return mDataSet.contains(data);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void reverse() {
         Collections.reverse(mDataSet);
         notifyDataSetChanged();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void clear() {
         mDataSet.clear();
         notifyDataSetChanged();
@@ -93,6 +104,7 @@ public abstract class BaseAdapter<T> extends RecyclerView.Adapter<RecyclerView.V
         return mDataSet;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void setData(Collection<T> collection) {
         mDataSet.clear();
         mDataSet.addAll(collection);
@@ -119,23 +131,17 @@ public abstract class BaseAdapter<T> extends RecyclerView.Adapter<RecyclerView.V
     public abstract RecyclerView.ItemDecoration getItemDecoration();
 
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mClickListener != null && isClickValid()) {
-                    mClickListener.onItemClick(v, holder.getAdapterPosition());
-                }
+    public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, int position) {
+        holder.itemView.setOnClickListener(v -> {
+            if (mClickListener != null && isClickValid()) {
+                mClickListener.onItemClick(v, holder.getBindingAdapterPosition());
             }
         });
-        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (mLongClickListener == null) {
-                    return false;
-                }
-                return mLongClickListener.onItemLongClick(v, holder.getAdapterPosition());
+        holder.itemView.setOnLongClickListener(v -> {
+            if (mLongClickListener == null) {
+                return false;
             }
+            return mLongClickListener.onItemLongClick(v, holder.getBindingAdapterPosition());
         });
     }
 

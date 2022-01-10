@@ -8,8 +8,6 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -20,9 +18,10 @@ import android.view.animation.TranslateAnimation;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.facebook.binaryresource.BinaryResource;
-import com.facebook.cache.common.SimpleCacheKey;
-import com.facebook.imagepipeline.core.ImagePipelineFactory;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.OnlyX.App;
 import com.OnlyX.R;
 import com.OnlyX.fresco.ControllerBuilderSupplierFactory;
@@ -33,7 +32,6 @@ import com.OnlyX.manager.PreferenceManager;
 import com.OnlyX.manager.SourceManager;
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.ImageUrl;
-import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.presenter.ReaderPresenter;
 import com.OnlyX.ui.adapter.ReaderAdapter;
 import com.OnlyX.ui.adapter.ReaderAdapter.OnLazyLoadListener;
@@ -44,16 +42,19 @@ import com.OnlyX.ui.widget.RetryDraweeView;
 import com.OnlyX.ui.widget.ReverseSeekBar;
 import com.OnlyX.utils.HintUtils;
 import com.OnlyX.utils.StringUtils;
+import com.facebook.binaryresource.BinaryResource;
+import com.facebook.cache.common.SimpleCacheKey;
+import com.facebook.imagepipeline.core.ImagePipelineFactory;
 
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar;
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar.OnProgressChangeListener;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -61,7 +62,7 @@ import butterknife.OnClick;
 /**
  * Created by Hiroshi on 2016/8/6.
  */
-public abstract class ReaderActivity extends BaseActivity implements OnTapGestureListener,
+public abstract class ReaderActivity extends BaseActivity<ReaderView> implements OnTapGestureListener,
         OnProgressChangeListener, OnLazyLoadListener, ReaderView {
 
     protected PreCacheLayoutManager mLayoutManager;
@@ -102,12 +103,12 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
 
     private boolean mHideInfo;
     private boolean mHideNav;
-    private boolean mShowTopbar;
+    private boolean mShowTopBar;
     private int[] mClickArray;
     private int[] mLongClickArray;
-    private BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent intent) {
+        public void onReceive(Context context, @NonNull Intent intent) {
             if (Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction())) {
                 int level = intent.getIntExtra("level", 0);
                 int scale = intent.getIntExtra("scale", 100);
@@ -119,6 +120,7 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
     private int _source;
     private boolean _local;
 
+    @NonNull
     public static Intent createIntent(Context context, long id, List<Chapter> list, int mode) {
         Intent intent = getIntent(context, mode);
         intent.putExtra(Extra.EXTRA_ID, id);
@@ -127,6 +129,7 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
         return intent;
     }
 
+    @NonNull
     private static Intent getIntent(Context context, int mode) {
         if (mode == PreferenceManager.READER_MODE_PAGE) {
             return new Intent(context, PageReaderActivity.class);
@@ -139,8 +142,8 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
     protected void initTheme() {
         super.initTheme();
         mHideNav = mPreference.getBoolean(PreferenceManager.PREF_READER_HIDE_NAV, false);
-        mShowTopbar = mPreference.getBoolean(PreferenceManager.PREF_OTHER_SHOW_TOPBAR, false);
-        if (!mHideNav || Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+        mShowTopBar = mPreference.getBoolean(PreferenceManager.PREF_OTHER_SHOW_TOPBAR, false);
+        if (!mHideNav) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
         if (mPreference.getBoolean(PreferenceManager.PREF_READER_KEEP_BRIGHT, false)) {
@@ -150,12 +153,12 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
         String key = mode == PreferenceManager.READER_MODE_PAGE ?
                 PreferenceManager.PREF_READER_PAGE_ORIENTATION : PreferenceManager.PREF_READER_STREAM_ORIENTATION;
         orientation = mPreference.getInt(key, PreferenceManager.READER_ORIENTATION_PORTRAIT);
-        final int oArray[] = {ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED};
+        final int[] oArray = {ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED};
         setRequestedOrientation(oArray[orientation]);
     }
 
     @Override
-    protected BasePresenter initPresenter() {
+    protected ReaderPresenter initPresenter() {
         mPresenter = new ReaderPresenter();
         mPresenter.attachView(this);
         return mPresenter;
@@ -172,6 +175,9 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
         if (mPreference.getBoolean(PreferenceManager.PREF_READER_WHITE_BACKGROUND, false)) {
             mReaderBox.setBackgroundResource(R.color.white);
         }
+        long id = getIntent().getLongExtra(Extra.EXTRA_ID, -1);
+        List<Chapter> list = getIntent().getParcelableArrayListExtra(Extra.EXTRA_CHAPTER);
+        mPresenter.loadInit(id, list.toArray(new Chapter[0]));
         initSeekBar();
         initLayoutManager();
         initReaderAdapter();
@@ -181,11 +187,15 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
         mRecyclerView.setItemViewCacheSize(2);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 mLastDx = dx;
                 mLastDy = dy;
             }
         });
+        mClickArray = mode == PreferenceManager.READER_MODE_PAGE ?
+                ClickEvents.getPageClickEventChoice(mPreference) : ClickEvents.getStreamClickEventChoice(mPreference);
+        mLongClickArray = mode == PreferenceManager.READER_MODE_PAGE ?
+                ClickEvents.getPageLongClickEventChoice(mPreference) : ClickEvents.getStreamLongClickEventChoice(mPreference);
     }
 
     @Override
@@ -195,9 +205,7 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
 
             options |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                options |= View.SYSTEM_UI_FLAG_FULLSCREEN;
-            }
+            options |= View.SYSTEM_UI_FLAG_FULLSCREEN;
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 options |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
@@ -206,7 +214,7 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
             getWindow().getDecorView().setSystemUiVisibility(options);
         }
 
-        if (mShowTopbar) {
+        if (mShowTopBar) {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -219,7 +227,7 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
     }
 
     private void initReaderAdapter() {
-        mReaderAdapter = new ReaderAdapter(this, new LinkedList<ImageUrl>());
+        mReaderAdapter = new ReaderAdapter(this, new LinkedList<>(),mPresenter.mSource);
         mReaderAdapter.setTapGestureListener(this);
         mReaderAdapter.setLazyLoadListener(this);
         mReaderAdapter.setScaleFactor(mPreference.getInt(PreferenceManager.PREF_READER_SCALE_FACTOR, 200) * 0.01f);
@@ -236,17 +244,6 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
         mLayoutManager.setOrientation(turn == PreferenceManager.READER_TURN_ATB ? LinearLayoutManager.VERTICAL : LinearLayoutManager.HORIZONTAL);
         mLayoutManager.setReverseLayout(turn == PreferenceManager.READER_TURN_RTL);
         mLayoutManager.setExtraSpace(2);
-    }
-
-    @Override
-    protected void initData() {
-        mClickArray = mode == PreferenceManager.READER_MODE_PAGE ?
-                ClickEvents.getPageClickEventChoice(mPreference) : ClickEvents.getStreamClickEventChoice(mPreference);
-        mLongClickArray = mode == PreferenceManager.READER_MODE_PAGE ?
-                ClickEvents.getPageLongClickEventChoice(mPreference) : ClickEvents.getStreamLongClickEventChoice(mPreference);
-        long id = getIntent().getLongExtra(Extra.EXTRA_ID, -1);
-        List<Chapter> list = getIntent().getParcelableArrayListExtra(Extra.EXTRA_CHAPTER);
-        mPresenter.loadInit(id, list.toArray(new Chapter[list.size()]));
     }
 
     @Override
@@ -509,7 +506,7 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
     }
 
     @Override
-    public boolean onGenericMotionEvent(MotionEvent event) {
+    public boolean onGenericMotionEvent(@NonNull MotionEvent event) {
 
         // Check that the event came from a game controller
         if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) ==
@@ -523,22 +520,22 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
             // earliest historical position in the batch
             for (int i = 0; i < historySize; i++) {
                 // Process the event at historical position i
-                processJoystickInput(event, i);
+                processJoystickInput(event);
             }
 
             // Process the current movement sample in the batch (position -1)
-            processJoystickInput(event, -1);
+            processJoystickInput(event);
             return true;
         }
         return super.onGenericMotionEvent(event);
     }
 
-    private boolean JoyLock[] = {false, false};
-    private int JoyEvent[] = {7, 8};
+    private final boolean[] JoyLock = {false, false};
+    private final int[] JoyEvent = {7, 8};
     private float mControllerTrigThreshold = 0.3f;
 
 
-    private void checkKey(float val, ClickEvents.JoyLocks joy) {
+    private void checkKey(float val, @NonNull ClickEvents.JoyLocks joy) {
         //unlock
         if (JoyLock[joy.ordinal()] && val < this.mControllerTrigThreshold) {
             JoyLock[joy.ordinal()] = false;
@@ -550,7 +547,7 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
         }
     }
 
-    private void processJoystickInput(MotionEvent event, int historyPos) {
+    private void processJoystickInput(@NonNull MotionEvent event) {
         checkKey(event.getAxisValue(MotionEvent.AXIS_GAS), ClickEvents.JoyLocks.RT);
         checkKey(event.getAxisValue(MotionEvent.AXIS_BRAKE), ClickEvents.JoyLocks.LT);
     }
@@ -573,7 +570,7 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
             position = mLayoutManager.findFirstVisibleItemPosition();
         }
         RetryDraweeView draweeView = ((ReaderAdapter.ImageHolder)
-                mRecyclerView.findViewHolderForAdapterPosition(position)).draweeView;
+                Objects.requireNonNull(mRecyclerView.findViewHolderForAdapterPosition(position))).draweeView;
         float limitX = point.x / 3.0f;
         float limitY = point.y / 3.0f;
         if (x < limitX) {
@@ -680,7 +677,7 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
             String title = mChapterTitle.getText().toString();
             for (String url : urls) {
                 if (url.startsWith("file")) {
-                    mPresenter.savePicture(new FileInputStream(new File(Uri.parse(url).getPath())), url, title, progress);
+                    mPresenter.savePicture(new FileInputStream(Uri.parse(url).getPath()), url, title, progress);
                     return;
                 } else if (url.startsWith("content")) {
                     mPresenter.savePicture(getContentResolver().openInputStream(Uri.parse(url)), url, title, progress);
@@ -722,7 +719,7 @@ public abstract class ReaderActivity extends BaseActivity implements OnTapGestur
     }
 
     protected void switchScreen() {
-        final int oArray[] = {ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT};
+        final int[] oArray = {ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT};
         setRequestedOrientation(oArray[this.getResources().getConfiguration().orientation]);
     }
 

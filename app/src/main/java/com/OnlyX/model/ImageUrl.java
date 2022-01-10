@@ -10,9 +10,9 @@ public class ImageUrl {
     public static final int STATE_NULL = 0;
     public static final int STATE_PAGE_1 = 1;
     //public static final int STATE_PAGE_Finish = 2;
-    private static AtomicInteger count = new AtomicInteger(0);
-    private int id; // 唯一标识
-    private int num;    // 章节的第几页
+    private static final AtomicInteger count = new AtomicInteger(0);
+    private final int id; // 唯一标识
+    private final int num;    // 章节的第几页
     private String[] urls;
     private String chapter; // 所属章节
     private int state;  // 切图时表示状态编号 比如长图可以切为多张方便加载
@@ -20,7 +20,7 @@ public class ImageUrl {
     private int width;  // 图片宽度
     private boolean lazy;   // 懒加载
     private boolean loading;    // 正在懒加载
-    private boolean success;    // 图片显示成功
+    // 图片显示成功
     private boolean download;   // 下载的图片
 
     public ImageUrl(int num, String url, boolean lazy) {
@@ -45,7 +45,6 @@ public class ImageUrl {
         this.width = 0;
         this.lazy = lazy;
         this.loading = false;
-        this.success = false;
     }
 
     public int getId() {
@@ -105,7 +104,7 @@ public class ImageUrl {
     }
 
     public long getSize() {
-        return height * width;
+        return (long) height * width;
     }
 
     public boolean isLazy() {
@@ -124,12 +123,7 @@ public class ImageUrl {
         this.loading = loading;
     }
 
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
-        this.success = success;
+    public void setSuccess() {
     }
 
     public boolean isDownload() {

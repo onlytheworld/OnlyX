@@ -1,12 +1,9 @@
 package com.OnlyX.source;
 
-import android.util.Pair;
-
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
 import com.OnlyX.model.Source;
-import com.OnlyX.parser.MangaCategory;
 import com.OnlyX.parser.MangaParser;
 import com.OnlyX.parser.NodeIterator;
 import com.OnlyX.parser.SearchIterator;
@@ -16,12 +13,14 @@ import com.OnlyX.utils.StringUtils;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 public class YYLS extends MangaParser {
@@ -30,14 +29,13 @@ public class YYLS extends MangaParser {
     public static final String DEFAULT_TITLE = "YYLS";
 
     private String _cid = "";
-    private String Baseurl = "http://8comic.se/";
 
     public YYLS(Source source) {
-        init(source, new Category());
+        init(source, null);
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -59,10 +57,8 @@ public class YYLS extends MangaParser {
             protected Comic parse(Node node) {
                 String cid = node.href("a");
                 String title = node.text("a");
-                String cover = null;
                 String update = "";
-                String author = null;
-                return new Comic(TYPE, cid, title, cover, update, author);
+                return new Comic(TYPE, cid, title, null, update, null);
             }
         };
     }
@@ -103,7 +99,8 @@ public class YYLS extends MangaParser {
 
     @Override
     public Request getImagesRequest(String cid, String path) {
-        path = Baseurl.concat(path);
+        String baseurl = "http://8comic.se/";
+        path = baseurl.concat(path);
         return new Request.Builder().addHeader("Referer", StringUtils.format("http://8comic.se%s", _cid)).url(path).build();
     }
 
@@ -115,7 +112,7 @@ public class YYLS extends MangaParser {
         if (!pageMatcher.find()) return null;
         Matcher NumMatcher = Pattern.compile("共([\\d]*?)頁").matcher(html);
         if (!NumMatcher.find()) return null;
-        int page = Integer.parseInt(NumMatcher.group(1));
+        int page = Integer.parseInt(Objects.requireNonNull(NumMatcher.group(1)));
         for (int i = 1; i <= page; ++i) {
             list.add(new ImageUrl(i, StringUtils.format("%s//%03d.jpg", pageMatcher.group(1), i), false));
         }
@@ -146,42 +143,44 @@ public class YYLS extends MangaParser {
         }
         return list;
     }
-
-    private static class Category extends MangaCategory {
-
-
-        @Override
-        public String getFormat(String... args) {
-            return StringUtils.format("http://8comic.se/category/漫畫分類/%s/page/%%d/",
-                    args[CATEGORY_SUBJECT]);
-        }
-
-        @Override
-        protected List<Pair<String, String>> getSubject() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("完结漫画", "經典完結"));
-            list.add(Pair.create("连载漫画", "漫畫連載"));
-            list.add(Pair.create("冒险", "冒險"));
-            list.add(Pair.create("格斗", "格鬥"));
-            list.add(Pair.create("科幻", "科幻"));
-            list.add(Pair.create("竞技", "競技"));
-            list.add(Pair.create("侦探", "偵探"));
-            list.add(Pair.create("恐怖", "恐怖"));
-            list.add(Pair.create("搞笑", "搞笑"));
-            list.add(Pair.create("校园", "校園"));
-            list.add(Pair.create("魔幻", "魔幻"));
-            list.add(Pair.create("魔法", "魔法"));
-            list.add(Pair.create("少女", "少女"));
-            list.add(Pair.create("少男", "少男"));
-            list.add(Pair.create("其他", "其他"));
-            return list;
-        }
-
-    }
+//
+//    private static class Category extends MangaCategory {
+//
+//
+//        @Override
+//        public String getFormat(String... args) {
+//            return StringUtils.format("http://8comic.se/category/漫畫分類/%s/page/%%d/",
+//                    args[CATEGORY_SUBJECT]);
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getSubject() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("完结漫画", "經典完結"));
+//            list.add(Pair.create("连载漫画", "漫畫連載"));
+//            list.add(Pair.create("冒险", "冒險"));
+//            list.add(Pair.create("格斗", "格鬥"));
+//            list.add(Pair.create("科幻", "科幻"));
+//            list.add(Pair.create("竞技", "競技"));
+//            list.add(Pair.create("侦探", "偵探"));
+//            list.add(Pair.create("恐怖", "恐怖"));
+//            list.add(Pair.create("搞笑", "搞笑"));
+//            list.add(Pair.create("校园", "校園"));
+//            list.add(Pair.create("魔幻", "魔幻"));
+//            list.add(Pair.create("魔法", "魔法"));
+//            list.add(Pair.create("少女", "少女"));
+//            list.add(Pair.create("少男", "少男"));
+//            list.add(Pair.create("其他", "其他"));
+//            return list;
+//        }
+//
+//    }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://8comic.se".concat(_cid));
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://8comic.se".concat(_cid));
+        return headers;
     }
 
 

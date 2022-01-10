@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreferenceCompat
+        app:key="notifications"
+        app:title="Enable message notifications" />
+
+    <Preference
+        app:key="feedback"
+        app:summary="Report technical issues or suggest new features"
+        app:title="Send feedback" />
+
+    <PreferenceCategory app:title="分组显示">
+        <CheckBoxPreference
+            app:defaultValue="true"
+            app:key="open_sound"
+            app:summary="当有新消息通知时播放声音提示"
+            app:title="开启声音" />
+        <SwitchPreference app:title="控制开关" />
+        <PreferenceScreen
+            app:key="xxx"
+            app:title="点击操作"></PreferenceScreen>
+        <PreferenceScreen app:title="跳转页面"></PreferenceScreen>
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

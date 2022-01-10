@@ -3,7 +3,6 @@ package com.OnlyX.presenter;
 import com.OnlyX.manager.TagManager;
 import com.OnlyX.manager.TagRefManager;
 import com.OnlyX.misc.Switcher;
-import com.OnlyX.model.Tag;
 import com.OnlyX.model.TagRef;
 import com.OnlyX.rx.RxBus;
 import com.OnlyX.rx.RxEvent;
@@ -16,8 +15,6 @@ import java.util.Set;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -41,74 +38,42 @@ public class TagEditorPresenter extends BasePresenter<TagEditorView> {
     public void load(long id) {
         mComicId = id;
         mCompositeSubscription.add(mTagManager.listInRx()
-                .doOnNext(new Action1<List<Tag>>() {
-                    @Override
-                    public void call(List<Tag> list) {
-                        for (TagRef ref : mTagRefManager.listByComic(mComicId)) {
-                            mTagSet.add(ref.getTid());
-                        }
+                .doOnNext(list -> {
+                    for (TagRef ref : mTagRefManager.listByComic(mComicId)) {
+                        mTagSet.add(ref.getTid());
                     }
                 })
-                .compose(new ToAnotherList<>(new Func1<Tag, Switcher<Tag>>() {
-                    @Override
-                    public Switcher<Tag> call(Tag tag) {
-                        return new Switcher<>(tag, mTagSet.contains(tag.getId()));
-                    }
-                }))
+                .compose(new ToAnotherList<>(tag -> new Switcher<>(tag, mTagSet.contains(tag.getId()))))
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<List<Switcher<Tag>>>() {
-                    @Override
-                    public void call(List<Switcher<Tag>> list) {
-                        mBaseView.onTagLoadSuccess(list);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        mBaseView.onTagLoadFail();
-                    }
-                }));
+                .subscribe(list -> mBaseView.onTagLoadSuccess(list), throwable -> mBaseView.onTagLoadFail()));
     }
 
     private void updateInTx(final List<Long> list) {
-        mTagRefManager.runInTx(new Runnable() {
-            @Override
-            public void run() {
-                for (long id : list) {
-                    if (!mTagSet.contains(id)) {
-                        mTagRefManager.insert(new TagRef(null, id, mComicId));
-                    }
+        mTagRefManager.runInTx(() -> {
+            for (long id : list) {
+                if (!mTagSet.contains(id)) {
+                    mTagRefManager.insert(new TagRef(null, id, mComicId));
                 }
-                mTagSet.removeAll(list);
-                for (long id : mTagSet) {
-                    mTagRefManager.delete(id, mComicId);
-                }
+            }
+            mTagSet.removeAll(list);
+            for (long id : mTagSet) {
+                mTagRefManager.delete(id, mComicId);
             }
         });
     }
 
     public void updateRef(List<Long> list) {
         mCompositeSubscription.add(Observable.just(list)
-                .doOnNext(new Action1<List<Long>>() {
-                    @Override
-                    public void call(List<Long> list) {
-                        updateInTx(list);
-                        mTagSet.clear();
-                        mTagSet.addAll(list);
-                    }
+                .doOnNext(list1 -> {
+                    updateInTx(list1);
+                    mTagSet.clear();
+                    mTagSet.addAll(list1);
                 }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<List<Long>>() {
-                    @Override
-                    public void call(List<Long> list) {
-                        mBaseView.onTagUpdateSuccess();
-                        RxBus.getInstance().post(new RxEvent(RxEvent.EVENT_TAG_UPDATE, mComicId, list));
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        mBaseView.onTagUpdateFail();
-                    }
-                }));
+                .subscribe(list12 -> {
+                    mBaseView.onTagUpdateSuccess();
+                    RxBus.getInstance().post(new RxEvent(RxEvent.EVENT_TAG_UPDATE, mComicId, list12));
+                }, throwable -> mBaseView.onTagUpdateFail()));
     }
 
 }

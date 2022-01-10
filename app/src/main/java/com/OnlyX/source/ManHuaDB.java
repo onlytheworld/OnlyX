@@ -1,9 +1,5 @@
 package com.OnlyX.source;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.google.gson.JsonObject;
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
@@ -15,17 +11,17 @@ import com.OnlyX.parser.UrlFilter;
 import com.OnlyX.soup.Node;
 import com.OnlyX.utils.DecryptionUtils;
 import com.OnlyX.utils.StringUtils;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -38,7 +34,7 @@ public class ManHuaDB extends MangaParser {
     public static final String DEFAULT_TITLE = "漫画DB";
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     public ManHuaDB(Source source) {
@@ -171,8 +167,10 @@ public class ManHuaDB extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "https://www.manhuadb.com");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "https://www.manhuadb.com");
+        return headers;
     }
 
 }

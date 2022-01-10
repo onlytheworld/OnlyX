@@ -11,14 +11,12 @@ import com.OnlyX.source.Locality;
 import com.OnlyX.utils.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import rx.Observable;
-import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
 /**
@@ -30,68 +28,52 @@ public class Local {
     private static Pattern chapterPattern = null;
 
     public static Observable<List<Pair<Comic, ArrayList<Task>>>> scan(final DocumentFile root) {
-        return Observable.create(new Observable.OnSubscribe<List<Pair<Comic, ArrayList<Task>>>>() {
-            @Override
-            public void call(Subscriber<? super List<Pair<Comic, ArrayList<Task>>>> subscriber) {
-                List<Pair<Comic, ArrayList<Task>>> result = new ArrayList<>();
+        return Observable.create((Observable.OnSubscribe<List<Pair<Comic, ArrayList<Task>>>>) subscriber -> {
+            List<Pair<Comic, ArrayList<Task>>> result = new ArrayList<>();
 
-                ScanInfo info = new ScanInfo(root);
-                countPicture(info);
-                if (info.count > 5) {
-                    Pair<Comic, ArrayList<Task>> pair = Pair.create(buildComic(info.dir, info.cover), new ArrayList<Task>());
-                    pair.second.add(buildTask(info.dir, info.count, true));
-                    result.add(pair);
-                } else {
-                    List<DocumentFile> list = new LinkedList<>();
-                    list.add(root);
+            ScanInfo info = new ScanInfo(root);
+            countPicture(info);
+            if (info.count > 5) {
+                Pair<Comic, ArrayList<Task>> pair = Pair.create(buildComic(info.dir, info.cover), new ArrayList<>());
+                pair.second.add(buildTask(info.dir, info.count, true));
+                result.add(pair);
+            } else {
+                List<DocumentFile> list = new LinkedList<>();
+                list.add(root);
 
-                    while (!list.isEmpty()) {
-                        DocumentFile dir = list.get(0);
+                while (!list.isEmpty()) {
+                    DocumentFile dir = list.get(0);
 
-                        List<ScanInfo> guessChapter = new LinkedList<>();
-                        List<ScanInfo> guessComic = new LinkedList<>();
-                        List<DocumentFile> guessOther = classify(guessChapter, guessComic, dir);
+                    List<ScanInfo> guessChapter = new LinkedList<>();
+                    List<ScanInfo> guessComic = new LinkedList<>();
+                    List<DocumentFile> guessOther = classify(guessChapter, guessComic, dir);
 
-                        if (guessChapter.size() > 2 * guessComic.size()) {  // 章节
-                            result.add(merge(dir, guessChapter, guessComic));
-                        } else {    // 单章节漫画
-                            split(guessChapter, result);
-                            split(guessComic, result);
-                            list.addAll(guessOther);
-                        }
-
-                        list.remove(0);
+                    if (guessChapter.size() > 2 * guessComic.size()) {  // 章节
+                        result.add(merge(dir, guessChapter, guessComic));
+                    } else {    // 单章节漫画
+                        split(guessChapter, result);
+                        split(guessComic, result);
+                        list.addAll(guessOther);
                     }
+
+                    list.remove(0);
                 }
-                subscriber.onNext(result);
-                subscriber.onCompleted();
             }
+            subscriber.onNext(result);
+            subscriber.onCompleted();
         }).subscribeOn(Schedulers.io());
     }
 
     public static Observable<List<ImageUrl>> images(final DocumentFile dir, final Chapter chapter) {
-        return Observable.create(new Observable.OnSubscribe<List<ImageUrl>>() {
-            @Override
-            public void call(Subscriber<? super List<ImageUrl>> subscriber) {
-                List<DocumentFile> files = dir.listFiles(new DocumentFile.DocumentFileFilter() {
-                    @Override
-                    public boolean call(DocumentFile file) {
-                        return file.isFile() && StringUtils.endWith(file.getName(), "jpg", "png", "jpeg");
-                    }
-                }, new Comparator<DocumentFile>() {
-                    @Override
-                    public int compare(DocumentFile lhs, DocumentFile rhs) {
-                        return lhs.getName().compareTo(rhs.getName());
-                    }
-                });
-                List<ImageUrl> list = Storage.buildImageUrlFromDocumentFile(files, chapter.getTitle(), chapter.getCount());
+        return Observable.create((Observable.OnSubscribe<List<ImageUrl>>) subscriber -> {
+            List<DocumentFile> files = dir.listFiles(file -> file.isFile() && StringUtils.endWith(file.getName(), "jpg", "png", "jpeg"), (lhs, rhs) -> lhs.getName().compareTo(rhs.getName()));
+            List<ImageUrl> list = Storage.buildImageUrlFromDocumentFile(files, chapter.getTitle(), chapter.getCount());
 
-                if (list.size() != 0) {
-                    subscriber.onNext(list);
-                    subscriber.onCompleted();
-                } else {
-                    subscriber.onError(new Exception());
-                }
+            if (list.size() != 0) {
+                subscriber.onNext(list);
+                subscriber.onCompleted();
+            } else {
+                subscriber.onError(new Exception());
             }
         }).subscribeOn(Schedulers.io());
     }
@@ -157,7 +139,7 @@ public class Local {
     }
 
     private static Pair<Comic, ArrayList<Task>> merge(DocumentFile dir, List<ScanInfo> list1, List<ScanInfo> list2) {
-        Pair<Comic, ArrayList<Task>> pair = Pair.create(buildComic(dir, list1.get(0).cover), new ArrayList<Task>());
+        Pair<Comic, ArrayList<Task>> pair = Pair.create(buildComic(dir, list1.get(0).cover), new ArrayList<>());
         for (ScanInfo info : list1) {
             pair.second.add(buildTask(info.dir, info.count, false));
         }
@@ -169,14 +151,14 @@ public class Local {
 
     private static void split(List<ScanInfo> list, List<Pair<Comic, ArrayList<Task>>> result) {
         for (ScanInfo info : list) {
-            Pair<Comic, ArrayList<Task>> pair = Pair.create(buildComic(info.dir, info.cover), new ArrayList<Task>());
+            Pair<Comic, ArrayList<Task>> pair = Pair.create(buildComic(info.dir, info.cover), new ArrayList<>());
             pair.second.add(buildTask(info.dir, info.count, true));
             result.add(pair);
         }
     }
 
     private static class ScanInfo {
-        DocumentFile dir = null;
+        DocumentFile dir;
         String cover = null;
         int count = 0;
 

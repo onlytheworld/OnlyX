@@ -2,11 +2,13 @@ package com.OnlyX.ui.adapter;
 
 import android.content.Context;
 import android.graphics.Rect;
-import androidx.annotation.ColorInt;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.OnlyX.R;
 import com.OnlyX.model.Tag;
@@ -28,16 +30,17 @@ public class TagAdapter extends BaseAdapter<Tag> {
         super(context, list);
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.item_tag, parent, false);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = inflate(R.layout.item_tag, parent, false);
         return new TagHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        Tag tag = mDataSet.get(position);
+        Tag tag = get(position);
         TagHolder viewHolder = (TagHolder) holder;
         viewHolder.tagTitle.setText(tag.getTitle());
         if (color != -1) {
@@ -49,7 +52,7 @@ public class TagAdapter extends BaseAdapter<Tag> {
     public RecyclerView.ItemDecoration getItemDecoration() {
         return new RecyclerView.ItemDecoration() {
             @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
                 int offset = parent.getWidth() / 90;
                 outRect.set(offset, 0, offset, (int) (offset * 1.5));
             }

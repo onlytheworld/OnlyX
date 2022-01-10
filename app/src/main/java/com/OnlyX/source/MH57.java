@@ -18,10 +18,11 @@ import com.OnlyX.utils.StringUtils;
 import org.json.JSONArray;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -42,12 +43,12 @@ public class MH57 extends MangaParser {
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
     public Request getSearchRequest(String keyword, int page) {
-        String url = StringUtils.format("http://m.wuqimh.com/search/q_%s-p-%d", keyword, page);
+        String url = StringUtils.format("http://m.57mh.org/search/q_%s-p-%d", keyword, page);
         return new Request.Builder().url(url).build();
     }
 
@@ -78,17 +79,17 @@ public class MH57 extends MangaParser {
 
     @Override
     public String getUrl(String cid) {
-        return "http://m.wuqimh.com/".concat(cid);
+        return "http://m.57mh.org/".concat(cid);
     }
 
     @Override
     protected void initUrlFilterList() {
-        filter.add(new UrlFilter("m.wuqimh.com"));
+        filter.add(new UrlFilter("m.57mh.org"));
     }
 
     @Override
     public Request getInfoRequest(String cid) {
-        String url = "http://m.wuqimh.com/".concat(cid);
+        String url = "http://m.57mh.org/".concat(cid);
         return new Request.Builder().url(url).build();
     }
 
@@ -118,7 +119,7 @@ public class MH57 extends MangaParser {
 
     @Override
     public Request getImagesRequest(String cid, String path) {
-        String url = StringUtils.format("http://m.wuqimh.com/%s/%s.html", cid, path);
+        String url = StringUtils.format("http://m.57mh.org/%s/%s.html", cid, path);
         return new Request.Builder().url(url).build();
     }
 
@@ -134,10 +135,10 @@ public class MH57 extends MangaParser {
                 int size = array.length();
                 for (int i = 0; i != size; ++i) {
                     String url = array.getString(i);
-                    if(url.indexOf("http://") == -1){
+                    if (!url.contains("http://")) {
                         url = servers[0] + url;
                     }
-                    list.add(new ImageUrl(i + 1, url, false));
+                    list.add(new ImageUrl(i + 1, url.replace("lancaier.com", "tingliu.cc"), false));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -180,10 +181,13 @@ public class MH57 extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://m.wuqimh.com/");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://m.57mh.org/");
+        return headers;
     }
 
+    //
     private static class Category extends MangaCategory {
 
         @Override

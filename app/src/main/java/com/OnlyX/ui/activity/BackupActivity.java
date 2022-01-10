@@ -1,5 +1,6 @@
 package com.OnlyX.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.View;
 
@@ -26,8 +27,10 @@ public class BackupActivity extends BackActivity implements BackupView {
     private static final int DIALOG_REQUEST_RESTORE_TAG = 1;
     private static final int DIALOG_REQUEST_RESTORE_SETTINGS = 2;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.backup_layout)
     View mLayoutView;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.backup_save_comic_auto)
     CheckBoxPreference mSaveComicAuto;
 
@@ -46,60 +49,69 @@ public class BackupActivity extends BackActivity implements BackupView {
         mSaveComicAuto.bindPreference(PreferenceManager.PREF_BACKUP_SAVE_COMIC, true);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.backup_save_comic)
     void onSaveFavoriteClick() {
         showProgressDialog();
         if (PermissionUtils.hasStoragePermission(this)) {
             mPresenter.saveComic();
         } else {
-            onFileLoadFail();
+            mPresenter.saveComic();
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.backup_save_tag)
     void onSaveTagClick() {
         showProgressDialog();
         if (PermissionUtils.hasStoragePermission(this)) {
             mPresenter.saveTag();
         } else {
-            onFileLoadFail();
+            mPresenter.saveTag();
         }
     }
 
-    @OnClick(R.id.backup_save_settings) void onSaveSettingsClick() {
+    @SuppressLint("NonConstantResourceId")
+    @OnClick(R.id.backup_save_settings)
+    void onSaveSettingsClick() {
         showProgressDialog();
         if (PermissionUtils.hasStoragePermission(this)) {
             mPresenter.saveSettings();
         } else {
-            onFileLoadFail();
+            mPresenter.saveSettings();
         }
     }
 
-    @OnClick(R.id.backup_restore_comic) void onRestoreFavoriteClick() {
+    @SuppressLint("NonConstantResourceId")
+    @OnClick(R.id.backup_restore_comic)
+    void onRestoreFavoriteClick() {
         showProgressDialog();
         if (PermissionUtils.hasStoragePermission(this)) {
             mPresenter.loadComicFile();
         } else {
-            onFileLoadFail();
+            mPresenter.loadComicFile();
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.backup_restore_tag)
     void onRestoreTagClick() {
         showProgressDialog();
         if (PermissionUtils.hasStoragePermission(this)) {
             mPresenter.loadTagFile();
         } else {
-            onFileLoadFail();
+            mPresenter.loadTagFile();
         }
     }
 
-    @OnClick(R.id.backup_restore_settings) void onRestoreSettingsClick() {
+    @SuppressLint("NonConstantResourceId")
+    @OnClick(R.id.backup_restore_settings)
+    void onRestoreSettingsClick() {
         showProgressDialog();
         if (PermissionUtils.hasStoragePermission(this)) {
             mPresenter.loadSettingsFile();
         } else {
-            onFileLoadFail();
+            mPresenter.loadSettingsFile();
         }
     }
 
@@ -139,7 +151,7 @@ public class BackupActivity extends BackActivity implements BackupView {
     private void showChoiceDialog(int title, String[] item, int request) {
         hideProgressDialog();
         ChoiceDialogFragment fragment = ChoiceDialogFragment.newInstance(title, item, -1, request);
-        fragment.show(getFragmentManager(), null);
+        fragment.show(getSupportFragmentManager(), null);
     }
 
     @Override

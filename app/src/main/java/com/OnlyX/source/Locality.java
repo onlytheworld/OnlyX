@@ -8,7 +8,6 @@ import com.OnlyX.parser.SearchIterator;
 
 import java.util.List;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -70,16 +69,6 @@ public class Locality extends MangaParser {
 
     @Override
     public String parseCheck(String html) {
-        return null;
-    }
-
-    @Override
-    public List<Comic> parseCategory(String html, int page) {
-        return null;
-    }
-
-    @Override
-    public Headers getHeader() {
         return null;
     }
 

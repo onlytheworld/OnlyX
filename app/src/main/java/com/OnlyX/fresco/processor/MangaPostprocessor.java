@@ -18,10 +18,10 @@ import com.OnlyX.utils.StringUtils;
 
 public class MangaPostprocessor extends BasePostprocessor {
 
-    private ImageUrl mImage;
-    private boolean isPaging;
-    private boolean isPagingReverse;
-    private boolean isWhiteEdge;
+    private final ImageUrl mImage;
+    private final boolean isPaging;
+    private final boolean isPagingReverse;
+    private final boolean isWhiteEdge;
 
     private int mWidth, mHeight;
     private int mPosX, mPosY;
@@ -96,7 +96,7 @@ public class MangaPostprocessor extends BasePostprocessor {
 
     private void prepareWhiteEdge(Bitmap bitmap) {
         int y1, y2, x1, x2;
-        int[] pixels = new int[(mWidth > mHeight ? mWidth : mHeight) * 20];
+        int[] pixels = new int[(Math.max(mWidth, mHeight)) * 20];
         int limit = mPosY + mHeight / 3;
 
         for (y1 = mPosY; y1 < limit; ++y1) {
@@ -163,7 +163,7 @@ public class MangaPostprocessor extends BasePostprocessor {
     private void processing(Bitmap src, Bitmap dst) {
         int unit = mHeight / 20;
         int remain = mHeight - 20 * unit;
-        int[] pixels = new int[(remain > unit ? remain : unit) * mWidth];
+        int[] pixels = new int[(Math.max(remain, unit)) * mWidth];
         for (int j = 0; j < 20; ++j) {
             src.getPixels(pixels, 0, mWidth, mPosX, mPosY + j * unit, mWidth, unit);
             dst.setPixels(pixels, 0, mWidth, 0, j * unit, mWidth, unit);

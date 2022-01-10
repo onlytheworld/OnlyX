@@ -3,16 +3,14 @@ package com.OnlyX.ui.adapter;
 import android.content.Context;
 import android.graphics.Rect;
 import android.net.Uri;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.facebook.drawee.interfaces.DraweeController;
-import com.facebook.drawee.view.SimpleDraweeView;
-import com.facebook.imagepipeline.common.ResizeOptions;
-import com.facebook.imagepipeline.request.ImageRequest;
-import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.OnlyX.App;
 import com.OnlyX.R;
 import com.OnlyX.fresco.ControllerBuilderProvider;
@@ -20,6 +18,9 @@ import com.OnlyX.manager.PreferenceManager;
 import com.OnlyX.manager.SourceManager;
 import com.OnlyX.model.MiniComic;
 import com.OnlyX.utils.FrescoUtils;
+import com.facebook.imagepipeline.common.ResizeOptions;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
 import java.util.List;
 
@@ -28,12 +29,12 @@ import butterknife.BindView;
 /**
  * Created by Hiroshi on 2016/7/1.
  */
-public class GridAdapter extends BaseAdapter<MiniComic> {
+public class GridAdapter extends ImageAdapter<MiniComic> {
 
     public static int TYPE_GRID = 2016101213;
 
     private ControllerBuilderProvider mProvider;
-    private SourceManager.TitleGetter mTitleGetter;
+    private SourceManager.SMGetter mSMGetter;
     private boolean symbol = false;
 
     public GridAdapter(Context context, List<MiniComic> list) {
@@ -45,19 +46,19 @@ public class GridAdapter extends BaseAdapter<MiniComic> {
         return TYPE_GRID;
     }
 
+    @NonNull
     @Override
-    public GridHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.item_grid, parent, false);
+    public GridHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = inflate(R.layout.item_grid, parent, false);
         return new GridHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        super.onBindViewHolder(holder, position);
-        MiniComic comic = mDataSet.get(position);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        MiniComic comic = get(position);
         GridHolder gridHolder = (GridHolder) holder;
         gridHolder.comicTitle.setText(comic.getTitle());
-        gridHolder.comicSource.setText(mTitleGetter.getTitle(comic.getSource()));
+        gridHolder.comicSource.setText(mSMGetter.getTitle(comic.getSource()));
         if (mProvider != null) {
 //            ImageRequest request = ImageRequestBuilder
 //                    .newBuilderWithSource(Uri.parse(comic.getCover()))
@@ -97,21 +98,32 @@ public class GridAdapter extends BaseAdapter<MiniComic> {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            DraweeController controller = mProvider.get(comic.getSource())
-                    .setOldController(gridHolder.comicImage.getController())
-                    .setImageRequest(request)
-                    .build();
-            gridHolder.comicImage.setController(controller);
+//            DraweeController controller = mProvider.get(comic.getSource())
+//                    .setOldController(gridHolder.comicImage.getController())
+//                    .setImageRequest(request)
+//                    .build();
+
+//            String referer = mSMGetter.getHeader(comic.getSource()).get("Referer");
+//            String ua = mSMGetter.getHeader(comic.getSource()).get("User-Agent");
+//            GlideUrl url = new GlideUrl(comic.getCover(), new LazyHeaders.Builder()
+//                    .addHeader("Referer", referer == null ? "" : referer)
+//                    .addHeader("User-Agent", ua == null ? "" : ua)
+//                    .build());
+//
+//            mGlide.load(url).into(gridHolder.comicImage);
+//            gridHolder.comicImage.setController(controller);
         }
         gridHolder.comicHighlight.setVisibility(symbol && comic.isHighlight() ? View.VISIBLE : View.INVISIBLE);
+        setImage(gridHolder.comicImage, comic.getCover(),mSMGetter.parser(comic.getSource()));
+        super.onBindViewHolder(holder, position);
     }
 
     public void setProvider(ControllerBuilderProvider provider) {
         mProvider = provider;
     }
 
-    public void setTitleGetter(SourceManager.TitleGetter getter) {
-        mTitleGetter = getter;
+    public void setSMGetter(SourceManager.SMGetter getter) {
+        mSMGetter = getter;
     }
 
     public void setSymbol(boolean symbol) {
@@ -122,7 +134,7 @@ public class GridAdapter extends BaseAdapter<MiniComic> {
     public RecyclerView.ItemDecoration getItemDecoration() {
         return new RecyclerView.ItemDecoration() {
             @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
                 int offset = parent.getWidth() / 90;
                 outRect.set(offset, 0, offset, (int) (2.8 * offset));
             }
@@ -130,7 +142,7 @@ public class GridAdapter extends BaseAdapter<MiniComic> {
     }
 
     public void removeItemById(long id) {
-        for (MiniComic comic : mDataSet) {
+        for (MiniComic comic : getDateSet()) {
             if (id == comic.getId()) {
                 remove(comic);
                 break;
@@ -141,7 +153,7 @@ public class GridAdapter extends BaseAdapter<MiniComic> {
     public int findFirstNotHighlight() {
         int count = 0;
         if (symbol) {
-            for (MiniComic comic : mDataSet) {
+            for (MiniComic comic : getDateSet()) {
                 if (!comic.isHighlight()) {
                     break;
                 }
@@ -153,7 +165,7 @@ public class GridAdapter extends BaseAdapter<MiniComic> {
 
     public void cancelAllHighlight() {
         int count = 0;
-        for (MiniComic comic : mDataSet) {
+        for (MiniComic comic : getDateSet()) {
             if (!comic.isHighlight()) {
                 break;
             }
@@ -171,7 +183,7 @@ public class GridAdapter extends BaseAdapter<MiniComic> {
 
     static class GridHolder extends BaseViewHolder {
         @BindView(R.id.item_grid_image)
-        SimpleDraweeView comicImage;
+        ImageView comicImage;
         @BindView(R.id.item_grid_title)
         TextView comicTitle;
         @BindView(R.id.item_grid_subtitle)

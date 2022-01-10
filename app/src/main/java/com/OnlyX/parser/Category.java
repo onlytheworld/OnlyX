@@ -1,11 +1,14 @@
 package com.OnlyX.parser;
 
-import androidx.annotation.IntDef;
 import android.util.Pair;
+
+import androidx.annotation.IntDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
+
+import okhttp3.Request;
 
 /**
  * Created by Hiroshi on 2016/12/10.
@@ -52,5 +55,9 @@ public interface Category {
     @Retention(RetentionPolicy.SOURCE)
     @interface Attribute {
     }
+
+    Request getCategoryListRequest();
+
+    List<Pair<String, List<Pair<String, String>>>> getCategoryList(String html);
 
 }

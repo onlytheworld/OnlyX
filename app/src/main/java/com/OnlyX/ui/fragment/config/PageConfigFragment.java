@@ -1,10 +1,9 @@
 package com.OnlyX.ui.fragment.config;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.RequiresApi;
-
 import android.view.View;
 
 import com.OnlyX.R;
@@ -35,18 +34,25 @@ public class PageConfigFragment extends BaseFragment implements DialogCaller {
     private static final int OPERATION_VOLUME_UP = 0;
     private static final int OPERATION_VOLUME_DOWN = 1;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_load_prev)
     CheckBoxPreference mReaderLoadPrev;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_load_next)
     CheckBoxPreference mReaderLoadNext;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_ban_turn)
     CheckBoxPreference mReaderBanTurn;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_quick_turn)
     CheckBoxPreference mReaderQuickTurn;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_orientation)
     ChoicePreference mReaderOrientation;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_turn)
     ChoicePreference mReaderTurn;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_trigger)
     SliderPreference mReaderTrigger;
 
@@ -63,11 +69,11 @@ public class PageConfigFragment extends BaseFragment implements DialogCaller {
         mReaderLoadNext.bindPreference(PreferenceManager.PREF_READER_PAGE_LOAD_NEXT, true);
         mReaderBanTurn.bindPreference(PreferenceManager.PREF_READER_PAGE_BAN_TURN, false);
         mReaderQuickTurn.bindPreference(PreferenceManager.PREF_READER_PAGE_QUICK_TURN, false);
-        mReaderOrientation.bindPreference(getFragmentManager(), this, PreferenceManager.PREF_READER_PAGE_ORIENTATION,
+        mReaderOrientation.bindPreference(requireActivity().getSupportFragmentManager(), this, PreferenceManager.PREF_READER_PAGE_ORIENTATION,
                 PreferenceManager.READER_ORIENTATION_AUTO, R.array.reader_orientation_items, DIALOG_REQUEST_ORIENTATION);
-        mReaderTurn.bindPreference(getFragmentManager(), this, PreferenceManager.PREF_READER_PAGE_TURN,
+        mReaderTurn.bindPreference(requireActivity().getSupportFragmentManager(), this, PreferenceManager.PREF_READER_PAGE_TURN,
                 PreferenceManager.READER_TURN_LTR, R.array.reader_turn_items, DIALOG_REQUEST_TURN);
-        mReaderTrigger.bindPreference(getFragmentManager(), this, PreferenceManager.PREF_READER_PAGE_TRIGGER, 10,
+        mReaderTrigger.bindPreference(requireActivity().getSupportFragmentManager(), this, PreferenceManager.PREF_READER_PAGE_TRIGGER, 10,
                 R.string.settings_reader_trigger, DIALOG_REQUEST_TRIGGER);
     }
 
@@ -94,7 +100,7 @@ public class PageConfigFragment extends BaseFragment implements DialogCaller {
             Context context = this.getContext();
             ChoiceDialogFragment fragment = ChoiceDialogFragment.newInstance(R.string.event_select,
                     ClickEvents.getEventTitleArray(context), mChoiceArray[index], index);
-            fragment.show(getFragmentManager(), null);
+            fragment.show(requireActivity().getSupportFragmentManager(), null);
         }
     }
 

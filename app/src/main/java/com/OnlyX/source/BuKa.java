@@ -15,13 +15,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import okhttp3.FormBody;
-import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -39,7 +40,7 @@ public class BuKa extends MangaParser {
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -182,8 +183,10 @@ public class BuKa extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://m.buka.cn");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://m.buka.cn");
+        return headers;
     }
 
 }

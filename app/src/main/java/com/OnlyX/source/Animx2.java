@@ -15,6 +15,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +36,7 @@ public class Animx2 extends MangaParser {
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -72,7 +73,7 @@ public class Animx2 extends MangaParser {
 
     @Override
     public Request getInfoRequest(String cid) {
-        if (cid.indexOf("http://www.2animx.com") == -1) {
+        if (!cid.contains("http://www.2animx.com")) {
             cid = "http://www.2animx.com/".concat(cid);
         }
         return new Request.Builder().url(cid).addHeader("Cookie", "isAdult=1").build();
@@ -86,8 +87,7 @@ public class Animx2 extends MangaParser {
         String update = "";
         String author = "";
         String intro = body.text(".mh-introduce");
-        boolean status = false;
-        comic.setInfo(title, cover, update, intro, author, status);
+        comic.setInfo(title, cover, update, intro, author, false);
     }
 
     @Override
@@ -97,21 +97,19 @@ public class Animx2 extends MangaParser {
             String title = node.attr("a", "title");
             Matcher mTitle = Pattern.compile("\\d+").matcher(title);
             title = mTitle.find() ? mTitle.group() : title;
-            String path2 = node.href("a");
             String path = node.hrefWithSplit("a", 0);
             list.add(new Chapter(title, path));
         }
         return list;
     }
 
-    private String _cid, _path;
+    private String _path;
 
     @Override
     public Request getImagesRequest(String cid, String path) {
-        if (path.indexOf("http://www.2animx.com") == -1) {
+        if (!path.contains("http://www.2animx.com")) {
             path = "http://www.2animx.com/".concat(path);
         }
-        _cid = cid;
         _path = path;
         return new Request.Builder().url(path).addHeader("Cookie", "isAdult=1").build();
     }
@@ -121,7 +119,7 @@ public class Animx2 extends MangaParser {
         List<ImageUrl> list = new ArrayList<>();
         Matcher pageMatcher = Pattern.compile("id=\"total\" value=\"(.*?)\"").matcher(html);
         if (!pageMatcher.find()) return null;
-        int page = Integer.parseInt(pageMatcher.group(1));
+        int page = Integer.parseInt(Objects.requireNonNull(pageMatcher.group(1)));
         for (int i = 1; i <= page; ++i) {
             list.add(new ImageUrl(i, StringUtils.format("%s-p-%d", _path, i), true));
         }
@@ -155,5 +153,7 @@ public class Animx2 extends MangaParser {
     public Headers getHeader(String url) {
         return Headers.of("Referer", url);
     }
+
+
 
 }

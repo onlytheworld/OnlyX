@@ -1,11 +1,11 @@
 package com.OnlyX.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 
 import com.OnlyX.R;
 import com.OnlyX.global.Extra;
-import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.presenter.SourceDetailPresenter;
 import com.OnlyX.ui.view.SourceDetailView;
 import com.OnlyX.ui.widget.Option;
@@ -19,10 +19,13 @@ import butterknife.OnClick;
 
 public class SourceDetailActivity extends BackActivity implements SourceDetailView {
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.source_detail_type)
     Option mSourceType;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.source_detail_title)
     Option mSourceTitle;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.source_detail_favorite)
     Option mSourceFavorite;
     private SourceDetailPresenter mPresenter;
@@ -34,17 +37,18 @@ public class SourceDetailActivity extends BackActivity implements SourceDetailVi
     }
 
     @Override
-    protected BasePresenter initPresenter() {
+    protected SourceDetailPresenter initPresenter() {
         mPresenter = new SourceDetailPresenter();
         mPresenter.attachView(this);
         return mPresenter;
     }
 
     @Override
-    protected void initData() {
+    protected void initView() {
         mPresenter.load(getIntent().getIntExtra(Extra.EXTRA_SOURCE, -1));
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.source_detail_favorite)
     void onSourceFavoriteClick() {
         // TODO 显示这个图源的漫画

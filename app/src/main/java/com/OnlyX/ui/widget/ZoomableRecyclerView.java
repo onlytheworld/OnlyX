@@ -1,5 +1,6 @@
 package com.OnlyX.ui.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -26,8 +27,8 @@ public class ZoomableRecyclerView extends RecyclerView implements OnScaleDragGes
     private final RectF mTempRectF = new RectF();
     private final Rect mTempRect = new Rect();
 
-    private ScaleDragDetector mScaleDragDetector;
-    private GestureDetectorCompat mGestureDetector;
+    private final ScaleDragDetector mScaleDragDetector;
+    private final GestureDetectorCompat mGestureDetector;
     private OnTapGestureListener mTapGestureListener;
 
     private float mScaleFactor = 2.0f;
@@ -58,13 +59,12 @@ public class ZoomableRecyclerView extends RecyclerView implements OnScaleDragGes
         mGestureDetector.setOnDoubleTapListener(this);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = MotionEventCompat.getActionMasked(event);
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-                cancelFling();
-                break;
+        if (action == MotionEvent.ACTION_DOWN) {
+            cancelFling();
         }
 
         boolean wasScaling = mScaleDragDetector.isScaling();

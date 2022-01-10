@@ -1,7 +1,9 @@
 package com.OnlyX.ui.fragment.recyclerview;
 
-import androidx.recyclerview.widget.RecyclerView;
+import android.annotation.SuppressLint;
 import android.view.View;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.OnlyX.R;
 import com.OnlyX.ui.adapter.BaseAdapter;
@@ -13,9 +15,10 @@ import butterknife.BindView;
  * Created by Hiroshi on 2016/10/11.
  */
 
-public abstract class RecyclerViewFragment extends BaseFragment implements BaseAdapter.OnItemClickListener,
+public abstract class RecyclerViewFragment<T> extends BaseFragment implements BaseAdapter.OnItemClickListener,
         BaseAdapter.OnItemLongClickListener {
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.recycler_view_content)
     protected RecyclerView mRecyclerView;
 
@@ -24,7 +27,7 @@ public abstract class RecyclerViewFragment extends BaseFragment implements BaseA
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setItemAnimator(null);
         mRecyclerView.setLayoutManager(initLayoutManager());
-        BaseAdapter adapter = initAdapter();
+        BaseAdapter<T> adapter = initAdapter();
         if (adapter != null) {
             adapter.setOnItemClickListener(this);
             adapter.setOnItemLongClickListener(this);
@@ -33,7 +36,7 @@ public abstract class RecyclerViewFragment extends BaseFragment implements BaseA
         }
     }
 
-    abstract protected BaseAdapter initAdapter();
+    abstract protected BaseAdapter<T> initAdapter();
 
     protected abstract RecyclerView.LayoutManager initLayoutManager();
 

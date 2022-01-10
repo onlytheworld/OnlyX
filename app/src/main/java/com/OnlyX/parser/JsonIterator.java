@@ -13,7 +13,7 @@ import org.json.JSONObject;
 public abstract class JsonIterator implements SearchIterator {
 
     private int index;
-    private JSONArray array;
+    private final JSONArray array;
 
     public JsonIterator(JSONArray array) {
         this.index = 0;

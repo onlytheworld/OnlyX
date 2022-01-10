@@ -2,7 +2,6 @@ package com.OnlyX.ui.widget;
 
 import android.content.Context;
 import android.graphics.Matrix;
-import android.os.Build;
 import android.view.View;
 
 /**
@@ -34,11 +33,7 @@ public class ViewUtils {
     }
 
     public static void postOnAnimation(View view, Runnable runnable) {
-        if (Build.VERSION.SDK_INT >= 16) {
-            view.postOnAnimation(runnable);
-        } else {
-            view.postDelayed(runnable, 16L);
-        }
+        view.postOnAnimation(runnable);
     }
 
     public static float calculateScale(Matrix matrix) {

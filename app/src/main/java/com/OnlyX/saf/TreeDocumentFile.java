@@ -28,8 +28,8 @@ import java.util.Map;
 @TargetApi(21)
 class TreeDocumentFile extends DocumentFile {
 
-    private Context mContext;
-    private Uri mUri;
+    private final Context mContext;
+    private final Uri mUri;
     private String mDisplayName;
     private String mMimeType;
     private Map<String, DocumentFile> mSubFiles;
@@ -113,7 +113,7 @@ class TreeDocumentFile extends DocumentFile {
                 doc = new TreeDocumentFile(this, mContext, result, displayName, null);
                 mSubFiles.put(displayName, doc);
             }
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException ignored) {
         }
 
         return doc;
@@ -137,7 +137,7 @@ class TreeDocumentFile extends DocumentFile {
                 doc = new TreeDocumentFile(this, mContext, result, displayName, DocumentsContract.Document.MIME_TYPE_DIR);
                 mSubFiles.put(displayName, doc);
             }
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException ignored) {
         }
 
         return doc;
@@ -194,12 +194,6 @@ class TreeDocumentFile extends DocumentFile {
     }
 
     @Override
-    public boolean canWrite() {
-        return mContext.checkCallingOrSelfUriPermission(mUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                == PackageManager.PERMISSION_GRANTED;
-    }
-
-    @Override
     public boolean delete() {
         try {
             if (DocumentsContract.deleteDocument(mContext.getContentResolver(), mUri)) {
@@ -207,22 +201,9 @@ class TreeDocumentFile extends DocumentFile {
                 ((TreeDocumentFile) getParentFile()).mSubFiles.remove(mDisplayName);
                 return true;
             }
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException ignored) {
         }
         return false;
-    }
-
-    @Override
-    public boolean exists() {
-        final ContentResolver resolver = mContext.getContentResolver();
-
-        Cursor c = null;
-        try {
-            c = resolver.query(mUri, new String[]{DocumentsContract.Document.COLUMN_DOCUMENT_ID}, null, null, null);
-            return c != null && c.getCount() > 0;
-        } finally {
-            closeQuietly(c);
-        }
     }
 
     @Override
@@ -281,19 +262,6 @@ class TreeDocumentFile extends DocumentFile {
             return null;
         }
         return mSubFiles.get(displayName);
-    }
-
-    @Override
-    public boolean renameTo(String displayName) {
-        try {
-            final Uri result = DocumentsContract.renameDocument(mContext.getContentResolver(), mUri, displayName);
-            if (result != null) {
-                mUri = result;
-                return true;
-            }
-        } catch (FileNotFoundException e) {
-        }
-        return false;
     }
 
     private boolean checkSubFiles() {

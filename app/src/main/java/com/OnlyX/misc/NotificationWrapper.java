@@ -15,9 +15,9 @@ import com.OnlyX.R;
 
 public class NotificationWrapper {
 
-    private NotificationManager mManager;
-    private NotificationCompat.Builder mBuilder;
-    private int mId;
+    private final NotificationManager mManager;
+    private final NotificationCompat.Builder mBuilder;
+    private final int mId;
 
     public NotificationWrapper(Context context, String id, @DrawableRes int icon, boolean ongoing) {
         String title = context.getString(R.string.app_name);

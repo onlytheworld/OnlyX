@@ -1,13 +1,10 @@
 package com.OnlyX.source;
 
-import android.util.Pair;
-
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
 import com.OnlyX.model.Source;
 import com.OnlyX.parser.JsonIterator;
-import com.OnlyX.parser.MangaCategory;
 import com.OnlyX.parser.MangaParser;
 import com.OnlyX.parser.SearchIterator;
 import com.OnlyX.parser.UrlFilter;
@@ -19,13 +16,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -39,11 +36,11 @@ public class Dmzjv2 extends MangaParser {
 //    private List<UrlFilter> filter = new ArrayList<>();
 
     public Dmzjv2(Source source) {
-        init(source, new Category());
+        init(source, null);
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -147,7 +144,7 @@ public class Dmzjv2 extends MangaParser {
             try {
                 JSONArray array = new JSONArray(jsonString);
                 for (int i = 0; i != array.length(); ++i) {
-                    list.add(new ImageUrl(i + 1, array.getString(i).replace("dmzj","dmzj1").replace("//g/","/g/"), false));
+                    list.add(new ImageUrl(i + 1, array.getString(i).replace("//g/","/g/"), false));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -192,137 +189,139 @@ public class Dmzjv2 extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://images.dmzj.com/");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://images.dmzj.com/");
+        return headers;
     }
-
-    private static class Category extends MangaCategory {
-
-        @Override
-        public boolean isComposite() {
-            return true;
-        }
-
-        @Override
-        public String getFormat(String... args) {
-            String path = args[CATEGORY_SUBJECT].concat(" ").concat(args[CATEGORY_READER]).concat(" ").concat(args[CATEGORY_PROGRESS])
-                    .concat(" ").concat(args[CATEGORY_AREA]).trim();
-            if (path.isEmpty()) {
-                path = String.valueOf(0);
-            } else {
-                path = path.replaceAll("\\s+", "-");
-            }
-                return StringUtils.format("http://v2.api.dmzj.com/classify/%s/%s/%%d.json", path, args[CATEGORY_ORDER]);
-        }
-
-        @Override
-        public List<Pair<String, String>> getSubject() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("冒险", "4"));
-            list.add(Pair.create("百合", "3243"));
-            list.add(Pair.create("生活", "3242"));
-            list.add(Pair.create("四格", "17"));
-            list.add(Pair.create("伪娘", "3244"));
-            list.add(Pair.create("悬疑", "3245"));
-            list.add(Pair.create("后宫", "3249"));
-            list.add(Pair.create("热血", "3248"));
-            list.add(Pair.create("耽美", "3246"));
-            list.add(Pair.create("其他", "16"));
-            list.add(Pair.create("恐怖", "14"));
-            list.add(Pair.create("科幻", "7"));
-            list.add(Pair.create("格斗", "6"));
-            list.add(Pair.create("欢乐向", "5"));
-            list.add(Pair.create("爱情", "8"));
-            list.add(Pair.create("侦探", "9"));
-            list.add(Pair.create("校园", "13"));
-            list.add(Pair.create("神鬼", "12"));
-            list.add(Pair.create("魔法", "11"));
-            list.add(Pair.create("竞技", "10"));
-            list.add(Pair.create("历史", "3250"));
-            list.add(Pair.create("战争", "3251"));
-            list.add(Pair.create("魔幻", "5806"));
-            list.add(Pair.create("扶她", "5345"));
-            list.add(Pair.create("东方", "5077"));
-            list.add(Pair.create("奇幻", "5848"));
-            list.add(Pair.create("轻小说", "6316"));
-            list.add(Pair.create("仙侠", "7900"));
-            list.add(Pair.create("搞笑", "7568"));
-            list.add(Pair.create("颜艺", "6437"));
-            list.add(Pair.create("性转换", "4518"));
-            list.add(Pair.create("高清单行", "4459"));
-            list.add(Pair.create("治愈", "3254"));
-            list.add(Pair.create("宅系", "3253"));
-            list.add(Pair.create("萌系", "3252"));
-            list.add(Pair.create("励志", "3255"));
-            list.add(Pair.create("节操", "6219"));
-            list.add(Pair.create("职场", "3328"));
-            list.add(Pair.create("西方魔幻", "3365"));
-            list.add(Pair.create("音乐舞蹈", "3326"));
-            list.add(Pair.create("机战", "3325"));
-            return list;
-        }
-
-        @Override
-        public boolean hasArea() {
-            return true;
-        }
-
-        @Override
-        public List<Pair<String, String>> getArea() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("日本", "2304"));
-            list.add(Pair.create("韩国", "2305"));
-            list.add(Pair.create("欧美", "2306"));
-            list.add(Pair.create("港台", "2307"));
-            list.add(Pair.create("内地", "2308"));
-            list.add(Pair.create("其他", "8453"));
-            return list;
-        }
-
-        @Override
-        public boolean hasReader() {
-            return true;
-        }
-
-        @Override
-        public List<Pair<String, String>> getReader() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("少年", "3262"));
-            list.add(Pair.create("少女", "3263"));
-            list.add(Pair.create("青年", "3264"));
-            return list;
-        }
-
-        @Override
-        public boolean hasProgress() {
-            return true;
-        }
-
-        @Override
-        public List<Pair<String, String>> getProgress() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("连载", "2309"));
-            list.add(Pair.create("完结", "2310"));
-            return list;
-        }
-
-        @Override
-        public boolean hasOrder() {
-            return true;
-        }
-
-        @Override
-        public List<Pair<String, String>> getOrder() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("更新", "1"));
-            list.add(Pair.create("人气", "0"));
-            return list;
-        }
-
-    }
+//
+//    private static class Category extends MangaCategory {
+//
+//        @Override
+//        public boolean isComposite() {
+//            return true;
+//        }
+//
+//        @Override
+//        public String getFormat(String... args) {
+//            String path = args[CATEGORY_SUBJECT].concat(" ").concat(args[CATEGORY_READER]).concat(" ").concat(args[CATEGORY_PROGRESS])
+//                    .concat(" ").concat(args[CATEGORY_AREA]).trim();
+//            if (path.isEmpty()) {
+//                path = String.valueOf(0);
+//            } else {
+//                path = path.replaceAll("\\s+", "-");
+//            }
+//                return StringUtils.format("http://v2.api.dmzj.com/classify/%s/%s/%%d.json", path, args[CATEGORY_ORDER]);
+//        }
+//
+//        @Override
+//        public List<Pair<String, String>> getSubject() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("冒险", "4"));
+//            list.add(Pair.create("百合", "3243"));
+//            list.add(Pair.create("生活", "3242"));
+//            list.add(Pair.create("四格", "17"));
+//            list.add(Pair.create("伪娘", "3244"));
+//            list.add(Pair.create("悬疑", "3245"));
+//            list.add(Pair.create("后宫", "3249"));
+//            list.add(Pair.create("热血", "3248"));
+//            list.add(Pair.create("耽美", "3246"));
+//            list.add(Pair.create("其他", "16"));
+//            list.add(Pair.create("恐怖", "14"));
+//            list.add(Pair.create("科幻", "7"));
+//            list.add(Pair.create("格斗", "6"));
+//            list.add(Pair.create("欢乐向", "5"));
+//            list.add(Pair.create("爱情", "8"));
+//            list.add(Pair.create("侦探", "9"));
+//            list.add(Pair.create("校园", "13"));
+//            list.add(Pair.create("神鬼", "12"));
+//            list.add(Pair.create("魔法", "11"));
+//            list.add(Pair.create("竞技", "10"));
+//            list.add(Pair.create("历史", "3250"));
+//            list.add(Pair.create("战争", "3251"));
+//            list.add(Pair.create("魔幻", "5806"));
+//            list.add(Pair.create("扶她", "5345"));
+//            list.add(Pair.create("东方", "5077"));
+//            list.add(Pair.create("奇幻", "5848"));
+//            list.add(Pair.create("轻小说", "6316"));
+//            list.add(Pair.create("仙侠", "7900"));
+//            list.add(Pair.create("搞笑", "7568"));
+//            list.add(Pair.create("颜艺", "6437"));
+//            list.add(Pair.create("性转换", "4518"));
+//            list.add(Pair.create("高清单行", "4459"));
+//            list.add(Pair.create("治愈", "3254"));
+//            list.add(Pair.create("宅系", "3253"));
+//            list.add(Pair.create("萌系", "3252"));
+//            list.add(Pair.create("励志", "3255"));
+//            list.add(Pair.create("节操", "6219"));
+//            list.add(Pair.create("职场", "3328"));
+//            list.add(Pair.create("西方魔幻", "3365"));
+//            list.add(Pair.create("音乐舞蹈", "3326"));
+//            list.add(Pair.create("机战", "3325"));
+//            return list;
+//        }
+//
+//        @Override
+//        public boolean hasArea() {
+//            return true;
+//        }
+//
+//        @Override
+//        public List<Pair<String, String>> getArea() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("日本", "2304"));
+//            list.add(Pair.create("韩国", "2305"));
+//            list.add(Pair.create("欧美", "2306"));
+//            list.add(Pair.create("港台", "2307"));
+//            list.add(Pair.create("内地", "2308"));
+//            list.add(Pair.create("其他", "8453"));
+//            return list;
+//        }
+//
+//        @Override
+//        public boolean hasReader() {
+//            return true;
+//        }
+//
+//        @Override
+//        public List<Pair<String, String>> getReader() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("少年", "3262"));
+//            list.add(Pair.create("少女", "3263"));
+//            list.add(Pair.create("青年", "3264"));
+//            return list;
+//        }
+//
+//        @Override
+//        public boolean hasProgress() {
+//            return true;
+//        }
+//
+//        @Override
+//        public List<Pair<String, String>> getProgress() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("连载", "2309"));
+//            list.add(Pair.create("完结", "2310"));
+//            return list;
+//        }
+//
+//        @Override
+//        public boolean hasOrder() {
+//            return true;
+//        }
+//
+//        @Override
+//        public List<Pair<String, String>> getOrder() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("更新", "1"));
+//            list.add(Pair.create("人气", "0"));
+//            return list;
+//        }
+//
+//    }
 
 }

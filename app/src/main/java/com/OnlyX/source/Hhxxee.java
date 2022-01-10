@@ -1,28 +1,25 @@
 package com.OnlyX.source;
 
-import android.util.Pair;
 
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
 import com.OnlyX.model.Source;
-import com.OnlyX.parser.MangaCategory;
 import com.OnlyX.parser.MangaParser;
 import com.OnlyX.parser.NodeIterator;
 import com.OnlyX.parser.SearchIterator;
 import com.OnlyX.parser.UrlFilter;
 import com.OnlyX.soup.Node;
-import com.OnlyX.utils.DecryptionUtils;
 import com.OnlyX.utils.StringUtils;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import okhttp3.FormBody;
-import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -43,7 +40,7 @@ public class Hhxxee extends MangaParser {
     private static final String[] servers = serverstr.split("\\|");
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -99,8 +96,7 @@ public class Hhxxee extends MangaParser {
         String update = "";
         String author = "";
         String intro = body.text(".cCon");
-        boolean status = false;
-        comic.setInfo(title, cover, update, intro, author, status);
+        comic.setInfo(title, cover, update, intro, author, false);
     }
 
     @Override
@@ -121,7 +117,7 @@ public class Hhxxee extends MangaParser {
     }
 
     private int getPictureServers(String url) {
-        return Integer.parseInt(StringUtils.match("ok\\-comic(\\d+)", url, 1)) - 1;
+        return Integer.parseInt(Objects.requireNonNull(StringUtils.match("ok\\-comic(\\d+)", url, 1))) - 1;
     }
 
     @Override
@@ -167,8 +163,10 @@ public class Hhxxee extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://99770.hhxxee.com");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://99770.hhxxee.com");
+        return headers;
     }
 
 

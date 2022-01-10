@@ -1,12 +1,9 @@
 package com.OnlyX.source;
 
-import android.util.Pair;
-
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
 import com.OnlyX.model.Source;
-import com.OnlyX.parser.MangaCategory;
 import com.OnlyX.parser.MangaParser;
 import com.OnlyX.parser.NodeIterator;
 import com.OnlyX.parser.SearchIterator;
@@ -18,11 +15,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.FormBody;
-import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -36,11 +34,11 @@ public class Webtoon extends MangaParser {
     public static final String DEFAULT_TITLE = "Webtoon";
 
     public Webtoon(Source source) {
-        init(source, new Category());
+        init(source, null);
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -102,6 +100,7 @@ public class Webtoon extends MangaParser {
         for (Node node : body.list("#_episodeList > li > a")) {
             String title = node.text("div.row > div.info > p.sub_title > span");
             String path = node.hrefWithSubString(30);
+            if(title.equals(null) || path.equals(null))continue;
             list.add(new Chapter(title, path));
         }
         return list;
@@ -169,24 +168,26 @@ public class Webtoon extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "https://m.webtoons.com");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "https://m.webtoons.com");
+        return headers;
     }
 
-    private static class Category extends MangaCategory {
-
-        @Override
-        public String getFormat(String... args) {
-            return "https://m.webtoons.com/zh-hant/new";
-        }
-
-        @Override
-        protected List<Pair<String, String>> getSubject() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("新作推荐", ""));
-            return list;
-        }
-
-    }
+//    private static class Category extends MangaCategory {
+//
+//        @Override
+//        public String getFormat(String... args) {
+//            return "https://m.webtoons.com/zh-hant/new";
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getSubject() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("新作推荐", ""));
+//            return list;
+//        }
+//
+//    }
 
 }

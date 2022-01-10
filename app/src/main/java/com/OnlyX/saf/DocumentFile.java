@@ -8,7 +8,6 @@ import android.provider.DocumentsContract;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -70,23 +69,9 @@ public abstract class DocumentFile {
 
     public abstract boolean canRead();
 
-    public abstract boolean canWrite();
-
     public abstract boolean delete();
 
-    public abstract boolean exists();
-
     public abstract InputStream openInputStream() throws FileNotFoundException;
-
-    public List<DocumentFile> listFiles(DocumentFileFilter filter) {
-        return listFiles(filter, null);
-    }
-
-    public DocumentFile[] listFiles(Comparator<? super DocumentFile> comp) {
-        DocumentFile[] files = listFiles();
-        Arrays.sort(files, comp);
-        return files;
-    }
 
     public abstract List<DocumentFile> listFiles(DocumentFileFilter filter, Comparator<? super DocumentFile> comp);
 
@@ -95,8 +80,6 @@ public abstract class DocumentFile {
     public abstract void refresh();
 
     public abstract DocumentFile findFile(String displayName);
-
-    public abstract boolean renameTo(String displayName);
 
     public interface DocumentFileFilter {
         boolean call(DocumentFile file);

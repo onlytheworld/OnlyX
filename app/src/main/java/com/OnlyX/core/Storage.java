@@ -28,9 +28,9 @@ import rx.schedulers.Schedulers;
 
 public class Storage {
 
-    private static String DOWNLOAD = "download";
-    private static String PICTURE = "picture";
-    private static String BACKUP = "backup";
+    private static final String DOWNLOAD = "download";
+    private static final String PICTURE = "picture";
+    private static final String BACKUP = "backup";
 
     public static DocumentFile initRoot(Context context, String uri) {
         if (uri == null) {
@@ -43,6 +43,8 @@ public class Storage {
         } else if (uri.startsWith("content")) {
             return DocumentFile.fromTreeUri(context, Uri.parse(uri));
         } else if (uri.startsWith("file")) {
+            return DocumentFile.fromFile(new File(Uri.parse(uri).getPath()));
+        } else if (uri.endsWith("files")) {
             return DocumentFile.fromFile(new File(Uri.parse(uri).getPath()));
         } else {
             return DocumentFile.fromFile(new File(uri, "OnlyX"));
@@ -104,43 +106,41 @@ public class Storage {
     }
 
     public static Observable<String> moveRootDir(final ContentResolver resolver, final DocumentFile root, final DocumentFile dst) {
-        return Observable.create(new Observable.OnSubscribe<String>() {
-            @Override
-            public void call(Subscriber<? super String> subscriber) {
-                if (dst.canRead() && !isDirSame(root, dst)) {
-                    root.refresh();
-                    if (copyDir(resolver, root, dst, BACKUP, subscriber) &&
-                            copyDir(resolver, root, dst, DOWNLOAD, subscriber) &&
-                            copyDir(resolver, root, dst, PICTURE, subscriber)) {
-                        deleteDir(root, BACKUP, subscriber);
-                        deleteDir(root, DOWNLOAD, subscriber);
-                        deleteDir(root, PICTURE, subscriber);
-                        subscriber.onCompleted();
-                    }
+        return Observable.create((Observable.OnSubscribe<String>) subscriber -> {
+            if (dst.canRead() && !isDirSame(root, dst)) {
+                root.refresh();
+                if (copyDir(resolver, root, dst, BACKUP, subscriber) &&
+                        copyDir(resolver, root, dst, DOWNLOAD, subscriber) &&
+                        copyDir(resolver, root, dst, PICTURE, subscriber)) {
+                    deleteDir(root, BACKUP, subscriber);
+                    deleteDir(root, DOWNLOAD, subscriber);
+                    deleteDir(root, PICTURE, subscriber);
+                    subscriber.onCompleted();
                 }
-                subscriber.onError(new Exception());
             }
+            if(isDirSame(root, dst)){
+                subscriber.onCompleted();
+            }
+            subscriber.onError(new Exception());
         }).subscribeOn(Schedulers.io());
     }
 
     public static Observable<Uri> savePicture(final ContentResolver resolver, final DocumentFile root,
                                               final InputStream stream, final String filename) {
-        return Observable.create(new Observable.OnSubscribe<Uri>() {
-            @Override
-            public void call(Subscriber<? super Uri> subscriber) {
-                try {
-                    DocumentFile dir = DocumentUtils.getOrCreateSubDirectory(root, PICTURE);
-                    if (dir != null) {
-                        DocumentFile file = DocumentUtils.getOrCreateFile(dir, filename);
-                        DocumentUtils.writeBinaryToFile(resolver, file, stream);
-                        subscriber.onNext(file.getUri());
-                        subscriber.onCompleted();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+        return Observable.create((Observable.OnSubscribe<Uri>) subscriber -> {
+            try {
+                DocumentFile dir = DocumentUtils.getOrCreateSubDirectory(root, PICTURE);
+                if (dir != null) {
+                    DocumentFile file = DocumentUtils.getOrCreateFile(dir, filename);
+                    assert file != null;
+                    DocumentUtils.writeBinaryToFile(resolver, file, stream);
+                    subscriber.onNext(file.getUri());
+                    subscriber.onCompleted();
                 }
-                subscriber.onError(new Exception());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            subscriber.onError(new Exception());
         }).subscribeOn(Schedulers.io());
     }
 

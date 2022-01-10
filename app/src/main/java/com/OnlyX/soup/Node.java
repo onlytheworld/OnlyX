@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class Node {
 
-    private Element element;
+    private final Element element;
 
     public Node(String html) {
         this.element = Jsoup.parse(html).body();
@@ -97,20 +97,8 @@ public class Node {
         return StringUtils.substring(attr(attr), start, end);
     }
 
-    public String attrWithSubString(String attr, int start) {
-        return attrWithSubString(attr, start, -1);
-    }
-
     public String attrWithSubString(String cssQuery, String attr, int start, int end) {
         return StringUtils.substring(attr(cssQuery, attr), start, end);
-    }
-
-    public String attrWithSubString(String cssQuery, String attr, int start) {
-        return attrWithSubString(cssQuery, attr, start, -1);
-    }
-
-    public String attrWithSplit(String attr, String regex, int index) {
-        return StringUtils.split(attr(attr), regex, index);
     }
 
     public String attrWithSplit(String cssQuery, String attr, String regex, int index) {
@@ -123,10 +111,6 @@ public class Node {
 
     public String src(String cssQuery) {
         return attr(cssQuery, "src");
-    }
-
-    public String dataUrl(String cssQuery) {
-        return attr(cssQuery, "data-url");
     }
 
     public String href() {
@@ -147,10 +131,6 @@ public class Node {
 
     public String hrefWithSubString(String cssQuery, int start, int end) {
         return attrWithSubString(cssQuery, "href", start, end);
-    }
-
-    public String hrefWithSubString(String cssQuery, int start) {
-        return hrefWithSubString(cssQuery, start, -1);
     }
 
     public String hrefWithSplit(int index) {

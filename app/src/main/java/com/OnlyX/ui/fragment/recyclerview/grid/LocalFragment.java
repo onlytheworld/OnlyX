@@ -1,5 +1,6 @@
 package com.OnlyX.ui.fragment.recyclerview.grid;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -11,7 +12,6 @@ import android.view.View;
 import com.OnlyX.R;
 import com.OnlyX.global.Extra;
 import com.OnlyX.model.MiniComic;
-import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.presenter.LocalPresenter;
 import com.OnlyX.saf.DocumentFile;
 import com.OnlyX.ui.activity.DirPickerActivity;
@@ -40,7 +40,7 @@ public class LocalFragment extends GridFragment implements LocalView {
     private LocalPresenter mPresenter;
 
     @Override
-    protected BasePresenter initPresenter() {
+    protected LocalPresenter initPresenter() {
         mPresenter = new LocalPresenter();
         mPresenter.attachView(this);
         return mPresenter;
@@ -56,7 +56,7 @@ public class LocalFragment extends GridFragment implements LocalView {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             try {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                getActivity().startActivityForResult(intent, DIALOG_REQUEST_SCAN);
+                requireActivity().startActivityForResult(intent, DIALOG_REQUEST_SCAN);
             } catch (ActivityNotFoundException e) {
                 HintUtils.showToast(getActivity(), R.string.settings_other_storage_not_found);
             }
@@ -66,26 +66,25 @@ public class LocalFragment extends GridFragment implements LocalView {
         }
     }
 
+    @SuppressLint("WrongConstant")
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode) {
-                case DIALOG_REQUEST_SCAN:
-                    showProgressDialog();
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        Uri uri = data.getData();
-                        int flags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        getActivity().getContentResolver().takePersistableUriPermission(uri, flags);
-                        mPresenter.scan(DocumentFile.fromTreeUri(getActivity(), uri));
+            if (requestCode == DIALOG_REQUEST_SCAN) {
+                showProgressDialog();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    Uri uri = data.getData();
+                    int flags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    requireActivity().getContentResolver().takePersistableUriPermission(uri, flags);
+                    mPresenter.scan(DocumentFile.fromTreeUri(getActivity(), uri));
+                } else {
+                    String path = data.getStringExtra(Extra.EXTRA_PICKER_PATH);
+                    if (!StringUtils.isEmpty(path)) {
+                        mPresenter.scan(DocumentFile.fromFile(new File(path)));
                     } else {
-                        String path = data.getStringExtra(Extra.EXTRA_PICKER_PATH);
-                        if (!StringUtils.isEmpty(path)) {
-                            mPresenter.scan(DocumentFile.fromFile(new File(path)));
-                        } else {
-                            onExecuteFail();
-                        }
+                        onExecuteFail();
                     }
-                    break;
+                }
             }
         }
     }
@@ -110,7 +109,7 @@ public class LocalFragment extends GridFragment implements LocalView {
                         MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.dialog_confirm,
                                 R.string.local_delete_confirm, true, DIALOG_REQUEST_DELETE);
                         fragment.setTargetFragment(this, 0);
-                        fragment.show(getFragmentManager(), null);
+                        fragment.show(requireActivity().getSupportFragmentManager(), null);
                 }
                 break;
             case DIALOG_REQUEST_DELETE:

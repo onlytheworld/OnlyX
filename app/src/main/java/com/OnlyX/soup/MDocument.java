@@ -11,7 +11,7 @@ import org.jsoup.select.Elements;
 
 public class MDocument {
 
-    private Document document;
+    private final Document document;
 
     public MDocument(String html) {
         this.document = Jsoup.parse(html);

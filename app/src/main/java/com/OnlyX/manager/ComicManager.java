@@ -22,7 +22,7 @@ public class ComicManager {
 
     private static ComicManager mInstance;
 
-    private ComicDao mComicDao;
+    private final ComicDao mComicDao;
 
     private ComicManager(AppGetter getter) {
         mComicDao = getter.getAppInstance().getDaoSession().getComicDao();

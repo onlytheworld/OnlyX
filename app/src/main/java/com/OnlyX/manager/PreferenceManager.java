@@ -134,7 +134,7 @@ public class PreferenceManager {
     public static final String PREFERENCES_USER_EMAIL = "user_email";
     public static final String PREFERENCES_USER_ID = "user_id";
     private static final String PREFERENCES_NAME = "onlyx_preferences";
-    private SharedPreferences mSharedPreferences;
+    private final SharedPreferences mSharedPreferences;
 
     public PreferenceManager(Context context) {
         mSharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);

@@ -1,5 +1,8 @@
 package com.OnlyX.ui.activity;
 
+import android.webkit.WebView;
+
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.OnlyX.R;
@@ -36,11 +39,9 @@ public class PageReaderActivity extends ReaderActivity implements OnPageChangedL
         mRecyclerView.setItemAnimator(null);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                switch (newState) {
-                    case RecyclerView.SCROLL_STATE_DRAGGING:
-                        hideControl();
-                        break;
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    hideControl();
                 }
             }
         });
@@ -120,6 +121,14 @@ public class PageReaderActivity extends ReaderActivity implements OnPageChangedL
     @Override
     protected int getLayoutRes() {
         return R.layout.activity_page_reader;
+    }
+
+    protected String getDefaultTitle() {
+        return null;
+    }
+
+    public WebView getWebView(){
+        return new WebView(this);
     }
 
 }

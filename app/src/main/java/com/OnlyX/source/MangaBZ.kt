@@ -1,5 +1,6 @@
 package com.OnlyX.source
 
+import android.annotation.SuppressLint
 import android.os.Build
 import com.OnlyX.model.Chapter
 import com.OnlyX.model.Comic
@@ -26,7 +27,7 @@ import java.util.*
 class MangaBZ(source: Source?) : MangaParser() {
     @Throws(UnsupportedEncodingException::class)
     override fun getSearchRequest(keyword: String, page: Int): Request {
-        var url = "http://www.mangabz.com/search?title=$keyword&page=$page"
+        val url = "http://www.mangabz.com/search?title=$keyword&page=$page"
         return Request.Builder().url(url).build()
     }
 
@@ -34,7 +35,7 @@ class MangaBZ(source: Source?) : MangaParser() {
         val body = Node(html)
         return object : NodeIterator(body.list(".mh-item")) {
             override fun parse(node: Node): Comic {
-                var cid = node.attr("a", "href").trim('/')
+                val cid = node.attr("a", "href").trim('/')
                 val title = node.text(".title")
                 val cover = node.attr(".mh-cover", "src")
                 val update = node.text(".chapter > a")
@@ -80,8 +81,8 @@ class MangaBZ(source: Source?) : MangaParser() {
         return list
     }
 
-    var _cid = ""
-    var _path = ""
+    private var _cid = ""
+    private var _path = ""
 
     override fun getImagesRequest(cid: String, path: String): Request {
         val url = "http://www.mangabz.com/$path/"
@@ -92,8 +93,8 @@ class MangaBZ(source: Source?) : MangaParser() {
                 .build()
     }
 
-    fun getValFromRegex(html: String, keyword: String, searchfor: String): String? {
-        val re = Regex("""var\s+""" + keyword + """\s*=\s*""" + searchfor + """\s*;""")
+    private fun getValFromRegex(html: String, keyword: String, searchfor: String): String? {
+        val re = Regex("var\\s+$keyword\\s*=\\s*$searchfor\\s*;")
         val match = re.find(html)
         return match?.groups?.get(1)?.value
     }
@@ -117,6 +118,7 @@ class MangaBZ(source: Source?) : MangaParser() {
         return list
     }
 
+    @SuppressLint("SimpleDateFormat")
     override fun getLazyRequest(url: String?): Request? {
         val dateFmt = "yyyy-MM-dd+HH:mm:ss"
         val dateStr =
@@ -125,7 +127,7 @@ class MangaBZ(source: Source?) : MangaParser() {
             val formatter = DateTimeFormatter.ofPattern(dateFmt)
             current.format(formatter)
         } else {
-            var date = Date();
+            val date = Date()
             val formatter = SimpleDateFormat(dateFmt)
             formatter.format(date)
         }
@@ -137,19 +139,20 @@ class MangaBZ(source: Source?) : MangaParser() {
                 .url(vurl).build()
     }
 
-    override fun parseLazy(html: String?, url: String?): String? {
-        val image = DecryptionUtils.evalDecrypt(html).split(',').get(0)
-        return image
+    override fun parseLazy(html: String?, url: String?): String {
+        return DecryptionUtils.evalDecrypt(html).split(',')[0]
     }
 
-    override fun getHeader(): Headers {
-        return Headers.of("Referer", "http://www.mangabz.com/")
+    override fun getHeader(): Map<String, String>? {
+        val headers: MutableMap<String, String> = HashMap()
+        headers["Referer"] = "http://www.mangabz.com/"
+        return headers
     }
 
     companion object {
         @JvmStatic
         fun getDefaultSource(): Source {
-            return Source(null, DEFAULT_TITLE, TYPE, true);
+            return Source(null, DEFAULT_TITLE, TYPE, false)
         }
 
         const val TYPE = 82

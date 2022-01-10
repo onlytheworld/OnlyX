@@ -19,7 +19,7 @@ public class TagManager {
 
     private static TagManager mInstance;
 
-    private TagDao mTagDao;
+    private final TagDao mTagDao;
 
     private TagManager(AppGetter getter) {
         mTagDao = getter.getAppInstance().getDaoSession().getTagDao();

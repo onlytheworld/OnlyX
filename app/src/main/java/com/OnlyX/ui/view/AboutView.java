@@ -5,10 +5,4 @@ package com.OnlyX.ui.view;
  */
 public interface AboutView extends BaseView {
 
-    void onUpdateReady();
-
-    void onUpdateNone();
-
-    void onCheckError();
-
 }

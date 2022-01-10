@@ -1,17 +1,20 @@
 package com.OnlyX.ui.activity.settings;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
-import com.google.android.material.tabs.TabLayout;
+
 import androidx.viewpager.widget.ViewPager;
 
 import com.OnlyX.R;
 import com.OnlyX.component.DialogCaller;
 import com.OnlyX.global.ClickEvents;
+import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.ui.activity.BackActivity;
 import com.OnlyX.ui.adapter.TabPagerAdapter;
 import com.OnlyX.ui.fragment.BaseFragment;
 import com.OnlyX.ui.fragment.config.PageConfigFragment;
 import com.OnlyX.ui.fragment.config.StreamConfigFragment;
+import com.google.android.material.tabs.TabLayout;
 
 import butterknife.BindView;
 
@@ -21,8 +24,10 @@ import butterknife.BindView;
 
 public class ReaderConfigActivity extends BackActivity implements DialogCaller {
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.reader_config_tab_layout)
     TabLayout mTabLayout;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.reader_config_view_pager)
     ViewPager mViewPager;
 
@@ -33,7 +38,7 @@ public class ReaderConfigActivity extends BackActivity implements DialogCaller {
     protected void initView() {
         mTabLayout.addTab(mTabLayout.newTab().setText(R.string.reader_config_page));
         mTabLayout.addTab(mTabLayout.newTab().setText(R.string.reader_config_stream));
-        TabPagerAdapter tabAdapter = new TabPagerAdapter(getFragmentManager(),
+        TabPagerAdapter tabAdapter = new TabPagerAdapter(getSupportFragmentManager(),
                 new BaseFragment[]{new PageConfigFragment(), new StreamConfigFragment()},
                 new String[]{getString(R.string.reader_config_page), getString(R.string.reader_config_stream)});
         mViewPager.setOffscreenPageLimit(1);
@@ -83,5 +88,9 @@ public class ReaderConfigActivity extends BackActivity implements DialogCaller {
         int index = bundle.getInt(EXTRA_DIALOG_RESULT_INDEX);
         mChoiceArray[requestCode] = index;
         mPreference.putInt(mKeyArray[requestCode], index);
+    }
+    @Override
+    protected BasePresenter initPresenter() {
+        return null;
     }
 }

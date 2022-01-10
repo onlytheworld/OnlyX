@@ -1,12 +1,9 @@
 package com.OnlyX.source;
 
-import android.util.Pair;
-
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
 import com.OnlyX.model.Source;
-import com.OnlyX.parser.MangaCategory;
 import com.OnlyX.parser.MangaParser;
 import com.OnlyX.parser.NodeIterator;
 import com.OnlyX.parser.SearchIterator;
@@ -19,11 +16,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.FormBody;
-import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -36,11 +34,11 @@ public class U17 extends MangaParser {
     public static final String DEFAULT_TITLE = "有妖气";
 
     public U17(Source source) {
-        init(source, new Category());
+        init(source, null);
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -188,86 +186,88 @@ public class U17 extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://www.u17.com");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://www.u17.com");
+        return headers;
     }
-
-    private static class Category extends MangaCategory {
-
-        @Override
-        public boolean isComposite() {
-            return true;
-        }
-
-        @Override
-        public String getFormat(String... args) {
-            return StringUtils.format("%s %s %s %s",
-                    args[CATEGORY_READER], args[CATEGORY_SUBJECT], args[CATEGORY_PROGRESS], args[CATEGORY_ORDER]);
-        }
-
-        @Override
-        protected List<Pair<String, String>> getSubject() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", "no"));
-            list.add(Pair.create("搞笑", "1"));
-            list.add(Pair.create("魔幻", "2"));
-            list.add(Pair.create("生活", "3"));
-            list.add(Pair.create("恋爱", "4"));
-            list.add(Pair.create("动作", "5"));
-            list.add(Pair.create("科幻", "6"));
-            list.add(Pair.create("战争", "7"));
-            list.add(Pair.create("体育", "8"));
-            list.add(Pair.create("推理", "9"));
-            list.add(Pair.create("惊悚", "11"));
-            list.add(Pair.create("同人", "12"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasReader() {
-            return true;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getReader() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", "no"));
-            list.add(Pair.create("少年", "1"));
-            list.add(Pair.create("少女", "2"));
-            list.add(Pair.create("耽美", "3"));
-            list.add(Pair.create("绘本", "4"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasProgress() {
-            return true;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getProgress() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", "no"));
-            list.add(Pair.create("连载", "0"));
-            list.add(Pair.create("完结", "1"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasOrder() {
-            return true;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getOrder() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全站最热", "0"));
-            list.add(Pair.create("更新时间", "1"));
-            list.add(Pair.create("上升最快", "2"));
-            list.add(Pair.create("最新发布", "3"));
-            return list;
-        }
-
-    }
+//
+//    private static class Category extends MangaCategory {
+//
+//        @Override
+//        public boolean isComposite() {
+//            return true;
+//        }
+//
+//        @Override
+//        public String getFormat(String... args) {
+//            return StringUtils.format("%s %s %s %s",
+//                    args[CATEGORY_READER], args[CATEGORY_SUBJECT], args[CATEGORY_PROGRESS], args[CATEGORY_ORDER]);
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getSubject() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", "no"));
+//            list.add(Pair.create("搞笑", "1"));
+//            list.add(Pair.create("魔幻", "2"));
+//            list.add(Pair.create("生活", "3"));
+//            list.add(Pair.create("恋爱", "4"));
+//            list.add(Pair.create("动作", "5"));
+//            list.add(Pair.create("科幻", "6"));
+//            list.add(Pair.create("战争", "7"));
+//            list.add(Pair.create("体育", "8"));
+//            list.add(Pair.create("推理", "9"));
+//            list.add(Pair.create("惊悚", "11"));
+//            list.add(Pair.create("同人", "12"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasReader() {
+//            return true;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getReader() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", "no"));
+//            list.add(Pair.create("少年", "1"));
+//            list.add(Pair.create("少女", "2"));
+//            list.add(Pair.create("耽美", "3"));
+//            list.add(Pair.create("绘本", "4"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasProgress() {
+//            return true;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getProgress() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", "no"));
+//            list.add(Pair.create("连载", "0"));
+//            list.add(Pair.create("完结", "1"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasOrder() {
+//            return true;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getOrder() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全站最热", "0"));
+//            list.add(Pair.create("更新时间", "1"));
+//            list.add(Pair.create("上升最快", "2"));
+//            list.add(Pair.create("最新发布", "3"));
+//            return list;
+//        }
+//
+//    }
 
 }

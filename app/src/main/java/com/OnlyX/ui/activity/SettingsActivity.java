@@ -1,28 +1,31 @@
 package com.OnlyX.ui.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import android.view.View;
-import android.widget.TextView;
 
 import com.OnlyX.App;
 import com.OnlyX.R;
 import com.OnlyX.global.Extra;
 import com.OnlyX.manager.PreferenceManager;
+import com.OnlyX.manager.SourceManager;
+import com.OnlyX.model.Source;
 import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.presenter.SettingsPresenter;
 import com.OnlyX.saf.DocumentFile;
 import com.OnlyX.service.DownloadService;
+import com.OnlyX.source.Luo;
 import com.OnlyX.ui.activity.settings.ReaderConfigActivity;
 import com.OnlyX.ui.fragment.dialog.MessageDialogFragment;
 import com.OnlyX.ui.fragment.dialog.StorageEditorDialogFragment;
@@ -33,10 +36,8 @@ import com.OnlyX.ui.widget.preference.SliderPreference;
 import com.OnlyX.utils.HintUtils;
 import com.OnlyX.utils.PermissionUtils;
 import com.OnlyX.utils.ServiceUtils;
-import com.OnlyX.utils.StringUtils;
 import com.OnlyX.utils.ThemeUtils;
 
-import java.io.File;
 import java.util.List;
 
 import butterknife.BindView;
@@ -61,48 +62,70 @@ public class SettingsActivity extends BackActivity implements SettingsView {
 
     @BindViews({R.id.settings_reader_title, R.id.settings_download_title, R.id.settings_other_title, R.id.settings_search_title})
     List<TextView> mTitleList;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_layout)
     View mSettingsLayout;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_keep_bright)
     CheckBoxPreference mReaderKeepBright;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_hide_info)
     CheckBoxPreference mReaderHideInfo;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_hide_nav)
     CheckBoxPreference mReaderHideNav;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_ban_double_click)
     CheckBoxPreference mReaderBanDoubleClick;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_paging)
     CheckBoxPreference mReaderPaging;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_paging_reverse)
     CheckBoxPreference mReaderPagingReverse;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_white_edge)
     CheckBoxPreference mReaderWhiteEdge;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_white_background)
     CheckBoxPreference mReaderWhiteBackground;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_search_auto_complete)
     CheckBoxPreference mSearchAutoComplete;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_other_check_update)
     CheckBoxPreference mCheckUpdate;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_mode)
     ChoicePreference mReaderMode;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_other_launch)
     ChoicePreference mOtherLaunch;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_other_theme)
     ChoicePreference mOtherTheme;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_scale_factor)
     SliderPreference mReaderScaleFactor;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_controller_trig_threshold)
     SliderPreference mReaderControllerTrigThreshold;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_reader_show_topbar)
     CheckBoxPreference mOtherShowTopbar;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_other_night_alpha)
     SliderPreference mOtherNightAlpha;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_download_thread)
     SliderPreference mDownloadThread;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_other_connect_only_wifi)
     CheckBoxPreference mConnectOnlyWifi;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_other_loadcover_only_wifi)
     CheckBoxPreference mLoadCoverOnlyWifi;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.settings_firebase_event)
     CheckBoxPreference mFireBaseEvent;
 
@@ -111,8 +134,8 @@ public class SettingsActivity extends BackActivity implements SettingsView {
     private String mStoragePath;
     private String mTempStorage;
 
-    private int[] mResultArray = new int[6];
-    private Intent mResultIntent = new Intent();
+    private final int[] mResultArray = new int[6];
+    private final Intent mResultIntent = new Intent();
 
     @Override
     protected BasePresenter initPresenter() {
@@ -124,7 +147,11 @@ public class SettingsActivity extends BackActivity implements SettingsView {
     @Override
     protected void initView() {
         super.initView();
-        mStoragePath = getAppInstance().getFilesDir().toString();
+//        getSupportFragmentManager()
+//                .beginTransaction()
+//                .replace(R.id.activity_settings_container, new SettingsFragment())
+//                .commit();
+        mStoragePath = getApplication().getFilesDir().toString();
         mReaderKeepBright.bindPreference(PreferenceManager.PREF_READER_KEEP_BRIGHT, false);
         mReaderHideInfo.bindPreference(PreferenceManager.PREF_READER_HIDE_INFO, false);
         mReaderHideNav.bindPreference(PreferenceManager.PREF_READER_HIDE_NAV, false);
@@ -138,52 +165,42 @@ public class SettingsActivity extends BackActivity implements SettingsView {
         mConnectOnlyWifi.bindPreference(PreferenceManager.PREF_OTHER_CONNECT_ONLY_WIFI, false);
         mLoadCoverOnlyWifi.bindPreference(PreferenceManager.PREF_OTHER_LOADCOVER_ONLY_WIFI, false);
         mFireBaseEvent.bindPreference(PreferenceManager.PREF_OTHER_FIREBASE_EVENT, true);
-        mOtherShowTopbar.bindPreference(PreferenceManager.PREF_OTHER_SHOW_TOPBAR,false);
-        mReaderMode.bindPreference(getFragmentManager(), PreferenceManager.PREF_READER_MODE,
+        mOtherShowTopbar.bindPreference(PreferenceManager.PREF_OTHER_SHOW_TOPBAR, false);
+        mReaderMode.bindPreference(getSupportFragmentManager(), PreferenceManager.PREF_READER_MODE,
                 PreferenceManager.READER_MODE_PAGE, R.array.reader_mode_items, DIALOG_REQUEST_READER_MODE);
-        mOtherLaunch.bindPreference(getFragmentManager(), PreferenceManager.PREF_OTHER_LAUNCH,
+        mOtherLaunch.bindPreference(getSupportFragmentManager(), PreferenceManager.PREF_OTHER_LAUNCH,
                 PreferenceManager.HOME_FAVORITE, R.array.launch_items, DIALOG_REQUEST_OTHER_LAUNCH);
-        mOtherTheme.bindPreference(getFragmentManager(), PreferenceManager.PREF_OTHER_THEME,
+        mOtherTheme.bindPreference(getSupportFragmentManager(), PreferenceManager.PREF_OTHER_THEME,
                 ThemeUtils.THEME_BLUE, R.array.theme_items, DIALOG_REQUEST_OTHER_THEME);
-        mReaderScaleFactor.bindPreference(getFragmentManager(), PreferenceManager.PREF_READER_SCALE_FACTOR, 200,
+        mReaderScaleFactor.bindPreference(getSupportFragmentManager(), PreferenceManager.PREF_READER_SCALE_FACTOR, 200,
                 R.string.settings_reader_scale_factor, DIALOG_REQUEST_READER_SCALE_FACTOR);
-        mReaderControllerTrigThreshold.bindPreference(getFragmentManager(), PreferenceManager.PREF_READER_CONTROLLER_TRIG_THRESHOLD, 30,
+        mReaderControllerTrigThreshold.bindPreference(getSupportFragmentManager(), PreferenceManager.PREF_READER_CONTROLLER_TRIG_THRESHOLD, 30,
                 R.string.settings_reader_controller_trig_threshold, DIALOG_REQUEST_READER_CONTROLLER_TRIG_THRESHOLD);
-        mOtherNightAlpha.bindPreference(getFragmentManager(), PreferenceManager.PREF_OTHER_NIGHT_ALPHA, 0xB0,
+        mOtherNightAlpha.bindPreference(getSupportFragmentManager(), PreferenceManager.PREF_OTHER_NIGHT_ALPHA, 0xB0,
                 R.string.settings_other_night_alpha, DIALOG_REQUEST_OTHER_NIGHT_ALPHA);
-        mDownloadThread.bindPreference(getFragmentManager(), PreferenceManager.PREF_DOWNLOAD_THREAD, 2,
+        mDownloadThread.bindPreference(getSupportFragmentManager(), PreferenceManager.PREF_DOWNLOAD_THREAD, 2,
                 R.string.settings_download_thread, DIALOG_REQUEST_DOWNLOAD_THREAD);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.settings_reader_config)
     void onReaderConfigBtnClick() {
         Intent intent = new Intent(this, ReaderConfigActivity.class);
         startActivity(intent);
     }
 
+    @SuppressLint("WrongConstant")
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode) {
-                case DIALOG_REQUEST_OTHER_STORAGE:
-                    showProgressDialog();
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        Uri uri = data.getData();
-                        int flags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                        getContentResolver().takePersistableUriPermission(uri, flags);
-                        mTempStorage = uri.toString();
-                        mPresenter.moveFiles(DocumentFile.fromTreeUri(this, uri));
-                    } else {
-                        String path = data.getStringExtra(Extra.EXTRA_PICKER_PATH);
-                        if (!StringUtils.isEmpty(path)) {
-                            DocumentFile file = DocumentFile.fromFile(new File(path));
-                            mTempStorage = file.getUri().toString();
-                            mPresenter.moveFiles(file);
-                        } else {
-                            onExecuteFail();
-                        }
-                    }
-                    break;
+            if (requestCode == DIALOG_REQUEST_OTHER_STORAGE) {
+                showProgressDialog();
+                Uri uri = data.getData();
+                int flags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                getContentResolver().takePersistableUriPermission(uri, flags);
+                mTempStorage = uri.toString();
+                mPresenter.moveFiles(DocumentFile.fromTreeUri(this, uri));
             }
         }
     }
@@ -269,6 +286,7 @@ public class SettingsActivity extends BackActivity implements SettingsView {
         mOtherShowTopbar.setColorStateList(stateList);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.settings_other_storage)
     void onOtherStorageClick() {
         if (ServiceUtils.isServiceRunning(this, DownloadService.class)) {
@@ -279,25 +297,41 @@ public class SettingsActivity extends BackActivity implements SettingsView {
             }
             StorageEditorDialogFragment fragment = StorageEditorDialogFragment.newInstance(R.string.settings_other_storage,
                     mStoragePath, DIALOG_REQUEST_OTHER_STORAGE);
-            fragment.show(getFragmentManager(), null);
+            fragment.show(getSupportFragmentManager(), null);
+        }
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @OnClick(R.id.settings_import_source)
+    void onImportSourceClick() {
+        if (ServiceUtils.isServiceRunning(this, DownloadService.class)) {
+            showSnackbar(R.string.download_ask_stop);
+        } else {
+            try {
+                List<Source> list = Luo.getDefaultSource(getAppInstance().getDaoSession().getSourceDao(), mStoragePath);
+                getAppInstance().getDaoSession().getSourceDao().insertOrReplaceInTx(list);
+                SourceManager.getInstance(this).updateManager(this);
+                HintUtils.showToast(this, R.string.settings_import_source_success);
+            } catch (Exception ignored) {
+                HintUtils.showToast(this, R.string.settings_import_source_fail);
+            }
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case 0:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    ((App) getApplication()).initRootDocumentFile();
-                    HintUtils.showToast(this, R.string.main_permission_success);
-                } else {
-                    HintUtils.showToast(this, R.string.main_permission_fail);
-                }
-                break;
+        if (requestCode == 0) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                ((App) getApplication()).initRootDocumentFile();
+                HintUtils.showToast(this, R.string.main_permission_success);
+            } else {
+                HintUtils.showToast(this, R.string.main_permission_fail);
+            }
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.settings_download_scan)
     void onDownloadScanClick() {
         if (ServiceUtils.isServiceRunning(this, DownloadService.class)) {
@@ -305,10 +339,11 @@ public class SettingsActivity extends BackActivity implements SettingsView {
         } else {
             MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.dialog_confirm,
                     R.string.settings_download_scan_confirm, true, DIALOG_REQUEST_DOWNLOAD_SCAN);
-            fragment.show(getFragmentManager(), null);
+            fragment.show(getSupportFragmentManager(), null);
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.settings_other_clear_cache)
     void onOtherCacheClick() {
         showProgressDialog();
@@ -351,12 +386,6 @@ public class SettingsActivity extends BackActivity implements SettingsView {
     @Override
     protected int getLayoutRes() {
         return R.layout.activity_settings;
-    }
-
-    public void requestPermissions() {
-        if (!PermissionUtils.hasStoragePermission(this)) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-        }
     }
 
 }

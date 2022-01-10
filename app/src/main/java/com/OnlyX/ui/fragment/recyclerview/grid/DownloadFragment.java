@@ -7,7 +7,6 @@ import android.view.View;
 import com.OnlyX.R;
 import com.OnlyX.model.MiniComic;
 import com.OnlyX.model.Task;
-import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.presenter.DownloadPresenter;
 import com.OnlyX.service.DownloadService;
 import com.OnlyX.ui.activity.TaskActivity;
@@ -35,7 +34,7 @@ public class DownloadFragment extends GridFragment implements DownloadView {
     private boolean isDownload;
 
     @Override
-    protected BasePresenter initPresenter() {
+    protected DownloadPresenter initPresenter() {
         mPresenter = new DownloadPresenter();
         mPresenter.attachView(this);
         return mPresenter;
@@ -43,7 +42,7 @@ public class DownloadFragment extends GridFragment implements DownloadView {
 
     @Override
     protected void initView() {
-        isDownload = ServiceUtils.isServiceRunning(getActivity(), DownloadService.class);
+        isDownload = ServiceUtils.isServiceRunning(requireActivity(), DownloadService.class);
         super.initView();
     }
 
@@ -65,13 +64,13 @@ public class DownloadFragment extends GridFragment implements DownloadView {
                         MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.dialog_confirm,
                                 R.string.download_delete_confirm, true, DIALOG_REQUEST_DELETE);
                         fragment.setTargetFragment(this, 0);
-                        fragment.show(getFragmentManager(), null);
+                        fragment.show(requireActivity().getSupportFragmentManager(), null);
                         break;
                 }
                 break;
             case DIALOG_REQUEST_SWITCH:
                 if (isDownload) {
-                    ServiceUtils.stopService(getActivity(), DownloadService.class);
+                    ServiceUtils.stopService(requireActivity());
                     HintUtils.showToast(getActivity(), R.string.download_stop_success);
                 } else {
                     showProgressDialog();
@@ -97,7 +96,7 @@ public class DownloadFragment extends GridFragment implements DownloadView {
         MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.dialog_confirm,
                 R.string.download_action_confirm, true, DIALOG_REQUEST_SWITCH);
         fragment.setTargetFragment(this, 0);
-        fragment.show(getFragmentManager(), null);
+        fragment.show(requireActivity().getSupportFragmentManager(), null);
     }
 
     @Override
@@ -148,7 +147,7 @@ public class DownloadFragment extends GridFragment implements DownloadView {
             HintUtils.showToast(getActivity(), R.string.download_task_empty);
         } else {
             Intent intent = DownloadService.createIntent(getActivity(), list);
-            getActivity().startService(intent);
+            requireActivity().startService(intent);
             HintUtils.showToast(getActivity(), R.string.download_start_success);
         }
         hideProgressDialog();

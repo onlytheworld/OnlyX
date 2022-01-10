@@ -3,33 +3,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
+    <!-- 抽屉布局 -->
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/main_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        <!-- 主页区域 -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
-
+            <!-- 导航栏 -->
             <include layout="@layout/custom_toolbar" />
-
+            <!-- 主页内容 -->
             <FrameLayout
                 android:id="@+id/main_fragment_container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
         </LinearLayout>
 
+        <!-- 左侧抽屉 -->
+        <!-- app:headerLayout 指定上部分的布局 -->
+        <!-- app:menu 指定下部分菜单 -->
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/main_navigation_view"
-            android:layout_width="280dp"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="start"
             app:headerLayout="@layout/custom_drawer_header"
-            app:menu="@menu/menu_main"></com.google.android.material.navigation.NavigationView>
+            app:menu="@menu/menu_main" />
     </androidx.drawerlayout.widget.DrawerLayout>
 
+    <!-- 简易的夜间模式，通过覆盖黑色透明层实现 -->
     <include layout="@layout/custom_night_mask" />
 </FrameLayout>

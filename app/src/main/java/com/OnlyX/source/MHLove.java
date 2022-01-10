@@ -12,11 +12,11 @@ import com.OnlyX.utils.DecryptionUtils;
 import com.OnlyX.utils.StringUtils;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -140,8 +140,10 @@ public class MHLove extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://m.manhualove.com/");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://m.manhualove.com/");
+        return headers;
     }
 
 }

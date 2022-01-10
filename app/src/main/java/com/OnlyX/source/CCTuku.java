@@ -1,12 +1,9 @@
 package com.OnlyX.source;
 
-import android.util.Pair;
-
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
 import com.OnlyX.model.Source;
-import com.OnlyX.parser.MangaCategory;
 import com.OnlyX.parser.MangaParser;
 import com.OnlyX.parser.NodeIterator;
 import com.OnlyX.parser.SearchIterator;
@@ -14,10 +11,12 @@ import com.OnlyX.soup.Node;
 import com.OnlyX.utils.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-import okhttp3.Headers;
 import okhttp3.Request;
 
 /**
@@ -30,7 +29,7 @@ public class CCTuku extends MangaParser {
     public static final String DEFAULT_TITLE = "CC图库";
 
     public CCTuku(Source source) {
-        init(source, new Category());
+        init(source, null);
     }
 
     public static Source getDefaultSource() {
@@ -135,8 +134,7 @@ public class CCTuku extends MangaParser {
     @Override
     public String parseLazy(String html, String url) {
         Node body = new Node(html);
-        String src = body.href("div.readForm > a");
-        return src;
+        return body.href("div.readForm > a");
     }
 
     @Override
@@ -153,7 +151,7 @@ public class CCTuku extends MangaParser {
     public List<Comic> parseCategory(String html, int page) {
         List<Comic> list = new LinkedList<>();
         Node body = new Node(html);
-        int total = Integer.parseInt(StringUtils.match("\\d+", body.text("div.title-banner > div > h1"), 0));
+        int total = Integer.parseInt(Objects.requireNonNull(StringUtils.match("\\d+", body.text("div.title-banner > div > h1"), 0)));
         if (page <= total) {
             for (Node node : body.list("div.main-list > div > div > div")) {
                 String cid = node.hrefWithSplit("div:eq(1) > div:eq(0) > a", 1);
@@ -168,97 +166,99 @@ public class CCTuku extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://m.tuku.cc");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://m.tuku.cc");
+        return headers;
     }
-
-    private static class Category extends MangaCategory {
-
-        @Override
-        public String getFormat(String... args) {
-            if (!"".equals(args[CATEGORY_SUBJECT])) {
-                return StringUtils.format("http://m.tuku.cc/list/list_%s_%%d.htm", args[CATEGORY_SUBJECT]);
-            } else if (!"".equals(args[CATEGORY_AREA])) {
-                return StringUtils.format("http://m.tuku.cc/list/comic_%s_%%d.htm", args[CATEGORY_AREA]);
-            } else if (!"".equals(args[CATEGORY_PROGRESS])) {
-                return StringUtils.format("http://m.tuku.cc/%s/%%d", args[CATEGORY_PROGRESS]);
-            } else {
-                return "http://m.tuku.cc/newest/%d";
-            }
-        }
-
-        @Override
-        protected List<Pair<String, String>> getSubject() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("魔幻", "1"));
-            list.add(Pair.create("动作", "2"));
-            list.add(Pair.create("热血", "5"));
-            list.add(Pair.create("爱情", "4"));
-            list.add(Pair.create("武侠", "15"));
-            list.add(Pair.create("搞笑", "7"));
-            list.add(Pair.create("校园", "20"));
-            list.add(Pair.create("竞技", "3"));
-            list.add(Pair.create("科幻", "11"));
-            list.add(Pair.create("悬疑", "10"));
-            list.add(Pair.create("拳皇", "12"));
-            list.add(Pair.create("恐怖", "9"));
-            list.add(Pair.create("美女", "19"));
-            list.add(Pair.create("励志", "8"));
-            list.add(Pair.create("历史", "22"));
-            list.add(Pair.create("百合", "35"));
-            list.add(Pair.create("猎奇", "39"));
-            list.add(Pair.create("职场", "38"));
-            list.add(Pair.create("短篇", "34"));
-            list.add(Pair.create("美食", "31"));
-            list.add(Pair.create("四格", "30"));
-            list.add(Pair.create("同人", "18"));
-            list.add(Pair.create("青年", "17"));
-            list.add(Pair.create("游戏", "14"));
-            list.add(Pair.create("街霸", "13"));
-            list.add(Pair.create("萌系", "6"));
-            list.add(Pair.create("机战", "43"));
-            list.add(Pair.create("节操", "42"));
-            list.add(Pair.create("伪娘", "41"));
-            list.add(Pair.create("后宫", "40"));
-            list.add(Pair.create("耽美", "16"));
-            list.add(Pair.create("其它", "33"));
-            list.add(Pair.create("轻小说", "21"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasArea() {
-            return true;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getArea() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("香港", "1"));
-            list.add(Pair.create("日本", "2"));
-            list.add(Pair.create("欧美", "5"));
-            list.add(Pair.create("台湾", "4"));
-            list.add(Pair.create("韩国", "15"));
-            list.add(Pair.create("大陆", "7"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasProgress() {
-            return true;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getProgress() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("全部", ""));
-            list.add(Pair.create("连载", "lianzai"));
-            list.add(Pair.create("完结", "wanjie"));
-            return list;
-        }
-
-    }
+//
+//    private static class Category extends MangaCategory {
+//
+//        @Override
+//        public String getFormat(String... args) {
+//            if (!"".equals(args[CATEGORY_SUBJECT])) {
+//                return StringUtils.format("http://m.tuku.cc/list/list_%s_%%d.htm", args[CATEGORY_SUBJECT]);
+//            } else if (!"".equals(args[CATEGORY_AREA])) {
+//                return StringUtils.format("http://m.tuku.cc/list/comic_%s_%%d.htm", args[CATEGORY_AREA]);
+//            } else if (!"".equals(args[CATEGORY_PROGRESS])) {
+//                return StringUtils.format("http://m.tuku.cc/%s/%%d", args[CATEGORY_PROGRESS]);
+//            } else {
+//                return "http://m.tuku.cc/newest/%d";
+//            }
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getSubject() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("魔幻", "1"));
+//            list.add(Pair.create("动作", "2"));
+//            list.add(Pair.create("热血", "5"));
+//            list.add(Pair.create("爱情", "4"));
+//            list.add(Pair.create("武侠", "15"));
+//            list.add(Pair.create("搞笑", "7"));
+//            list.add(Pair.create("校园", "20"));
+//            list.add(Pair.create("竞技", "3"));
+//            list.add(Pair.create("科幻", "11"));
+//            list.add(Pair.create("悬疑", "10"));
+//            list.add(Pair.create("拳皇", "12"));
+//            list.add(Pair.create("恐怖", "9"));
+//            list.add(Pair.create("美女", "19"));
+//            list.add(Pair.create("励志", "8"));
+//            list.add(Pair.create("历史", "22"));
+//            list.add(Pair.create("百合", "35"));
+//            list.add(Pair.create("猎奇", "39"));
+//            list.add(Pair.create("职场", "38"));
+//            list.add(Pair.create("短篇", "34"));
+//            list.add(Pair.create("美食", "31"));
+//            list.add(Pair.create("四格", "30"));
+//            list.add(Pair.create("同人", "18"));
+//            list.add(Pair.create("青年", "17"));
+//            list.add(Pair.create("游戏", "14"));
+//            list.add(Pair.create("街霸", "13"));
+//            list.add(Pair.create("萌系", "6"));
+//            list.add(Pair.create("机战", "43"));
+//            list.add(Pair.create("节操", "42"));
+//            list.add(Pair.create("伪娘", "41"));
+//            list.add(Pair.create("后宫", "40"));
+//            list.add(Pair.create("耽美", "16"));
+//            list.add(Pair.create("其它", "33"));
+//            list.add(Pair.create("轻小说", "21"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasArea() {
+//            return true;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getArea() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("香港", "1"));
+//            list.add(Pair.create("日本", "2"));
+//            list.add(Pair.create("欧美", "5"));
+//            list.add(Pair.create("台湾", "4"));
+//            list.add(Pair.create("韩国", "15"));
+//            list.add(Pair.create("大陆", "7"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasProgress() {
+//            return true;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getProgress() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("全部", ""));
+//            list.add(Pair.create("连载", "lianzai"));
+//            list.add(Pair.create("完结", "wanjie"));
+//            return list;
+//        }
+//
+//    }
 
 }

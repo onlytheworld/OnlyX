@@ -1,7 +1,7 @@
 package com.OnlyX.ui.widget.preference;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
+import androidx.fragment.app.FragmentManager;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -20,9 +20,9 @@ import com.OnlyX.ui.widget.Option;
 
 public class ChoicePreference extends Option implements View.OnClickListener {
 
-    private PreferenceManager mPreferenceManager;
+    private final PreferenceManager mPreferenceManager;
     private FragmentManager mFragmentManager;
-    private Fragment mTargetFragment;
+    private BaseFragment mTargetFragment;
     private String mPreferenceKey;
     private String[] mItems;
     private int mChoice;
@@ -41,7 +41,7 @@ public class ChoicePreference extends Option implements View.OnClickListener {
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         layoutInflater.inflate(R.layout.custom_option, this);
 
-        mPreferenceManager = ((App) context.getApplicationContext()).getPreferenceManager();
+        mPreferenceManager = App.getPreferenceManager();
 
         setOnClickListener(this);
     }

@@ -2,6 +2,8 @@ package com.OnlyX.source;
 
 import android.util.Pair;
 
+import com.OnlyX.App;
+import com.OnlyX.core.Manga;
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
@@ -12,15 +14,20 @@ import com.OnlyX.parser.NodeIterator;
 import com.OnlyX.parser.SearchIterator;
 import com.OnlyX.parser.UrlFilter;
 import com.OnlyX.soup.Node;
-import com.OnlyX.ui.activity.ResultActivity;
 import com.OnlyX.utils.DecryptionUtils;
 import com.OnlyX.utils.StringUtils;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Headers;
 import okhttp3.Request;
@@ -33,9 +40,12 @@ public class PuFei extends MangaParser {
 
     public static final int TYPE = 50;
     public static final String DEFAULT_TITLE = "扑飞漫画";
+    private String baseurl = "http://m.pufei5.com/";
+    String requestUrl;
+
 
     public PuFei(Source source) {
-        init(source, new PuFei.Category());
+        init(source, new Category());
     }
 
     public static Source getDefaultSource() {
@@ -44,16 +54,32 @@ public class PuFei extends MangaParser {
 
     @Override
     public Request getSearchRequest(String keyword, int page) throws UnsupportedEncodingException {
-        String url = "";
+        requestUrl = "";
         if (page == 1) {
-            url = StringUtils.format("http://m.pufei8.com/e/search/?searchget=1&tbname=mh&show=title,player,playadmin,bieming,pinyin,playadmin&tempid=4&keyboard=%s",
+            requestUrl = StringUtils.format(baseurl + "e/search/?searchget=1&tbname=mh&show=title,player,playadmin,bieming,pinyin,playadmin&tempid=4&keyboard=%s",
                     URLEncoder.encode(keyword, "GB2312"));
         }
-        return new Request.Builder().url(url).build();
+        return new Request.Builder()
+                .headers(Headers.of(getHeader())).url(requestUrl).build();
     }
 
     @Override
     public SearchIterator getSearchIterator(String html, int page) {
+        Document midHT = Jsoup.parse(html);
+        try {
+            String js = baseurl + midHT.head().select("script").first().attr("src").trim();
+            Request request = new Request.Builder().headers(Headers.of(getHeader())).url(js).build();
+            String jscript = Manga.getResponseBody(App.getHttpClient(), request);
+            Element sc = midHT.body().selectFirst("script");
+            jscript += midHT.body().selectFirst("script").val();
+            String result = DecryptionUtils.evalDecrypt(jscript);
+            request = new Request.Builder()
+                    .headers(Headers.of(getHeader())).url(requestUrl).build();
+            html = Manga.getResponseBody(App.getHttpClient(), request);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Node body = new Node(html);
         return new NodeIterator(body.list("#detail > li")) {
             @Override
@@ -71,7 +97,7 @@ public class PuFei extends MangaParser {
 
     @Override
     public String getUrl(String cid) {
-        return "http://m.pufei8.com/manhua/".concat(cid);
+        return baseurl + "manhua/".concat(cid);
     }
 
     @Override
@@ -81,8 +107,9 @@ public class PuFei extends MangaParser {
 
     @Override
     public Request getInfoRequest(String cid) {
-        String url = "http://m.pufei8.com/manhua/".concat(cid);
-        return new Request.Builder().url(url).build();
+        String url = baseurl + "manhua/".concat(cid);
+        return new Request.Builder()
+                .headers(Headers.of(getHeader())).url(url).build();
     }
 
     @Override
@@ -110,8 +137,9 @@ public class PuFei extends MangaParser {
 
     @Override
     public Request getImagesRequest(String cid, String path) {
-        String url = StringUtils.format("http://m.pufei8.com/manhua/%s/%s.html", cid, path);
-        return new Request.Builder().url(url).build();
+        String url = StringUtils.format(baseurl + "manhua/%s/%s.html", cid, path);
+        return new Request.Builder()
+                .headers(Headers.of(getHeader())).url(url).build();
     }
 
     @Override
@@ -158,8 +186,15 @@ public class PuFei extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://m.pufei8.com");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", baseurl);
+        headers.put("User-Agent", windowsUA);
+        headers.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+        headers.put("Accept-Encoding", "gzip, deflate");
+        headers.put("Accept-Language", "zh-CN,zh;q=0.9");
+        headers.put("Host", "m.pufei5.com");
+        return headers;
     }
 
     private static class Category extends MangaCategory {

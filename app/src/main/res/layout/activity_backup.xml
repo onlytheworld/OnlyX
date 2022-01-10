@@ -103,6 +103,30 @@
                         app:summary="@string/backup_restore_settings_summary"/>
                 </LinearLayout>
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginRight="16dp"
+                        android:layout_marginBottom="10dp"
+                        android:text="@string/backup_delete"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="14sp" />
+
+                    <com.OnlyX.ui.widget.Option
+                        android:id="@+id/backup_delete"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:summary="@string/backup_delete_all_summary"
+                        app:title="@string/backup_delete_all" />
+                </LinearLayout>
+
                 <!--<LinearLayout-->
                     <!--android:layout_width="match_parent"-->
                     <!--android:layout_height="wrap_content"-->

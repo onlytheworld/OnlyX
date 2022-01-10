@@ -63,7 +63,7 @@ public class ClickEvents {
     }
 
     public static int[] getPageClickEventChoice(PreferenceManager manager) {
-        final int[] array = {
+        return new int[]{
                 //screen
                 manager.getInt(PreferenceManager.PREF_READER_PAGE_CLICK_LEFT, EVENT_PREV_PAGE),
                 manager.getInt(PreferenceManager.PREF_READER_PAGE_CLICK_TOP, EVENT_PREV_PAGE),
@@ -85,7 +85,6 @@ public class ClickEvents {
                 manager.getInt(PreferenceManager.PREF_READER_PAGE_JOY_X, EVENT_SWITCH_CONTROL),
                 manager.getInt(PreferenceManager.PREF_READER_PAGE_JOY_Y, EVENT_SAVE_PICTURE),
         };
-        return array;
     }
 
     public static int[] getPageLongClickEventChoice(PreferenceManager manager) {
@@ -130,7 +129,7 @@ public class ClickEvents {
     }
 
     public static int[] getStreamClickEventChoice(PreferenceManager manager) {
-        final int[] array = {
+        return new int[]{
                 //screen
                 manager.getInt(PreferenceManager.PREF_READER_STREAM_CLICK_LEFT, EVENT_NULL),//0
                 manager.getInt(PreferenceManager.PREF_READER_STREAM_CLICK_TOP, EVENT_NULL),//1
@@ -152,7 +151,6 @@ public class ClickEvents {
                 manager.getInt(PreferenceManager.PREF_READER_STREAM_JOY_X, EVENT_SWITCH_CONTROL),//15
                 manager.getInt(PreferenceManager.PREF_READER_STREAM_JOY_Y, EVENT_SAVE_PICTURE),//16
         };
-        return array;
     }
 
     public static int[] getStreamLongClickEventChoice(PreferenceManager manager) {

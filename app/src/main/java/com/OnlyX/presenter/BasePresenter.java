@@ -19,12 +19,7 @@ public abstract class BasePresenter<T extends BaseView> {
         this.mBaseView = view;
         onViewAttach();
         mCompositeSubscription = new CompositeSubscription();
-        addSubscription(RxEvent.EVENT_SWITCH_NIGHT, new Action1<RxEvent>() {
-            @Override
-            public void call(RxEvent rxEvent) {
-                mBaseView.onNightSwitch();
-            }
-        });
+        addSubscription(RxEvent.EVENT_SWITCH_NIGHT, rxEvent -> mBaseView.onNightSwitch());
         initSubscription();
     }
 
@@ -35,12 +30,7 @@ public abstract class BasePresenter<T extends BaseView> {
     }
 
     protected void addSubscription(@RxEvent.EventType int type, Action1<RxEvent> action) {
-        mCompositeSubscription.add(RxBus.getInstance().toObservable(type).subscribe(action, new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        }));
+        mCompositeSubscription.add(RxBus.getInstance().toObservable(type).subscribe(action, Throwable::printStackTrace));
     }
 
     public void detachView() {

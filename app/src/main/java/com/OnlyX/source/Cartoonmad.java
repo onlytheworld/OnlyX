@@ -1,6 +1,5 @@
 package com.OnlyX.source;
 
-import com.google.common.collect.Lists;
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
@@ -9,19 +8,21 @@ import com.OnlyX.parser.MangaParser;
 import com.OnlyX.parser.RegexIterator;
 import com.OnlyX.parser.SearchIterator;
 import com.OnlyX.parser.UrlFilter;
-import com.OnlyX.soup.Node;
 import com.OnlyX.utils.StringUtils;
+import com.google.common.collect.Lists;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import okhttp3.FormBody;
-import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -39,7 +40,7 @@ public class Cartoonmad extends MangaParser {
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     @Override
@@ -88,7 +89,6 @@ public class Cartoonmad extends MangaParser {
 
     @Override
     public void parseInfo(String html, Comic comic) throws UnsupportedEncodingException {
-        Node body = new Node(html);
         Matcher mTitle = Pattern.compile("<meta name=\"Keywords\" content=\"(.*?),").matcher(html);
         String title = mTitle.find() ? mTitle.group(1) : "";
         Matcher mCover = Pattern.compile("<div class=\"cover\"><\\/div><img src=\"(.*?)\"").matcher(html);
@@ -97,8 +97,7 @@ public class Cartoonmad extends MangaParser {
         String author = "";
         Matcher mInro = Pattern.compile("<META name=\"description\" content=\"(.*?)\">").matcher(html);
         String intro = mInro.find() ? mInro.group(1) : "";
-        boolean status = false;
-        comic.setInfo(title, cover, update, intro, author, status);
+        comic.setInfo(title, cover, update, intro, author, false);
     }
 
     @Override
@@ -113,13 +112,9 @@ public class Cartoonmad extends MangaParser {
         return Lists.reverse(list);
     }
 
-    private String _cid, _path;
-
     @Override
     public Request getImagesRequest(String cid, String path) {
         String url = StringUtils.format("https://www.cartoonmad.com%s", path);
-        _cid = cid;
-        _path = path;
         return new Request.Builder().url(url).build();
     }
 
@@ -128,7 +123,7 @@ public class Cartoonmad extends MangaParser {
         List<ImageUrl> list = new ArrayList<>();
         Matcher pageMatcher = Pattern.compile("<a class=onpage>.*<a class=pages href=(.*)\\d{3}\\.html>(.*?)<\\/a>").matcher(html);
         if (!pageMatcher.find()) return null;
-        int page = Integer.parseInt(pageMatcher.group(2));
+        int page = Integer.parseInt(Objects.requireNonNull(pageMatcher.group(2)));
         for (int i = 1; i <= page; ++i) {
             list.add(new ImageUrl(i, StringUtils.format("https://www.cartoonmad.com/comic/%s%03d.html", pageMatcher.group(1), i), true));
         }
@@ -158,8 +153,10 @@ public class Cartoonmad extends MangaParser {
     }
 
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://www.cartoonmad.com");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://www.cartoonmad.com");
+        return headers;
     }
 
 }

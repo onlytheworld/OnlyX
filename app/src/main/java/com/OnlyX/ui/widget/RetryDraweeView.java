@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 import com.facebook.drawee.controller.AbstractDraweeController;
-import com.facebook.drawee.generic.GenericDraweeHierarchy;
 import com.facebook.drawee.view.SimpleDraweeView;
 
 /**
@@ -12,10 +11,6 @@ import com.facebook.drawee.view.SimpleDraweeView;
  */
 
 public class RetryDraweeView extends SimpleDraweeView {
-
-    public RetryDraweeView(Context context, GenericDraweeHierarchy hierarchy) {
-        super(context, hierarchy);
-    }
 
     public RetryDraweeView(Context context) {
         this(context, null, 0);

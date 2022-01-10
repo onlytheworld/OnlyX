@@ -22,7 +22,7 @@ public class ServiceUtils {
         return false;
     }
 
-    public static void stopService(Context context, Class<?> service) {
+    public static void stopService(Context context) {
         context.stopService(new Intent(context, DownloadService.class));
     }
 

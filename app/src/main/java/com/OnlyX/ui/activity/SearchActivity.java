@@ -1,25 +1,26 @@
 package com.OnlyX.ui.activity;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.textfield.TextInputLayout;
-import androidx.appcompat.widget.AppCompatAutoCompleteTextView;
-import androidx.appcompat.widget.AppCompatCheckBox;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatAutoCompleteTextView;
+import androidx.appcompat.widget.AppCompatCheckBox;
+
 import com.OnlyX.R;
+import com.OnlyX.global.Extra;
 import com.OnlyX.manager.PreferenceManager;
 import com.OnlyX.misc.Switcher;
 import com.OnlyX.model.Source;
-import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.presenter.SearchPresenter;
 import com.OnlyX.ui.adapter.AutoCompleteAdapter;
 import com.OnlyX.ui.fragment.dialog.MultiDialogFragment;
@@ -27,6 +28,8 @@ import com.OnlyX.ui.view.SearchView;
 import com.OnlyX.utils.CollectionUtils;
 import com.OnlyX.utils.HintUtils;
 import com.OnlyX.utils.StringUtils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +45,16 @@ public class SearchActivity extends BackActivity implements SearchView, TextView
 
     private final static int DIALOG_REQUEST_SOURCE = 0;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.search_text_layout)
     TextInputLayout mInputLayout;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.search_keyword_input)
     AppCompatAutoCompleteTextView mEditText;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.search_action_button)
     FloatingActionButton mActionButton;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.search_strict_checkbox)
     AppCompatCheckBox mCheckBox;
 
@@ -58,7 +65,7 @@ public class SearchActivity extends BackActivity implements SearchView, TextView
     private boolean mAutoComplete;
 
     @Override
-    protected BasePresenter initPresenter() {
+    protected SearchPresenter initPresenter() {
         mPresenter = new SearchPresenter();
         mPresenter.attachView(this);
         return mPresenter;
@@ -67,12 +74,9 @@ public class SearchActivity extends BackActivity implements SearchView, TextView
     @Override
     protected void initView() {
         mAutoComplete = mPreference.getBoolean(PreferenceManager.PREF_SEARCH_AUTO_COMPLETE, false);
-        mEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (mActionButton != null && !mActionButton.isShown()) {
-                    mActionButton.show();
-                }
+        mEditText.setOnFocusChangeListener((v, hasFocus) -> {
+            if (mActionButton != null && !mActionButton.isShown()) {
+                mActionButton.show();
             }
         });
         mEditText.addTextChangedListener(new TextWatcher() {
@@ -100,12 +104,17 @@ public class SearchActivity extends BackActivity implements SearchView, TextView
             mArrayAdapter = new AutoCompleteAdapter(this);
             mEditText.setAdapter(mArrayAdapter);
         }
-    }
-
-    @Override
-    protected void initData() {
         mSourceList = new ArrayList<>();
-        mPresenter.loadSource();
+
+
+        Intent intent = getIntent();
+        if (!intent.getStringExtra(Extra.EXTRA_PICKER_PATH).equals("CategoryActivity")) {
+            mPresenter.loadSource();
+        } else {
+            int source = intent.getIntExtra(Extra.EXTRA_SOURCE, -1);
+            mSourceList.add(new Switcher<>(mPresenter.loadSource(source), true));
+        }
+        hideProgressBar();
     }
 
     @Override
@@ -115,38 +124,34 @@ public class SearchActivity extends BackActivity implements SearchView, TextView
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.search_menu_source:
-                if (!mSourceList.isEmpty()) {
-                    int size = mSourceList.size();
-                    String[] arr1 = new String[size];
-                    boolean[] arr2 = new boolean[size];
-                    for (int i = 0; i < size; ++i) {
-                        arr1[i] = mSourceList.get(i).getElement().getTitle();
-                        arr2[i] = mSourceList.get(i).isEnable();
-                    }
-                    MultiDialogFragment fragment =
-                            MultiDialogFragment.newInstance(R.string.search_source_select, arr1, arr2, DIALOG_REQUEST_SOURCE);
-                    fragment.show(getFragmentManager(), null);
-                    break;
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.search_menu_source) {
+            if (!mSourceList.isEmpty()) {
+                int size = mSourceList.size();
+                String[] arr1 = new String[size];
+                boolean[] arr2 = new boolean[size];
+                for (int i = 0; i < size; ++i) {
+                    arr1[i] = mSourceList.get(i).getElement().getTitle();
+                    arr2[i] = mSourceList.get(i).isEnable();
                 }
+                MultiDialogFragment fragment =
+                        MultiDialogFragment.newInstance(this, R.string.search_source_select, arr1, arr2, DIALOG_REQUEST_SOURCE);
+                fragment.show(getSupportFragmentManager(), null);
+            }
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onDialogResult(int requestCode, Bundle bundle) {
-        switch (requestCode) {
-            case DIALOG_REQUEST_SOURCE:
-                boolean[] check = bundle.getBooleanArray(EXTRA_DIALOG_RESULT_VALUE);
-                if (check != null) {
-                    int size = mSourceList.size();
-                    for (int i = 0; i < size; ++i) {
-                        mSourceList.get(i).setEnable(check[i]);
-                    }
+        if (requestCode == DIALOG_REQUEST_SOURCE) {
+            boolean[] check = bundle.getBooleanArray(EXTRA_DIALOG_RESULT_VALUE);
+            if (check != null) {
+                int size = mSourceList.size();
+                for (int i = 0; i < size; ++i) {
+                    mSourceList.get(i).setEnable(check[i + 1]);
                 }
-                break;
+            }
         }
     }
 
@@ -159,10 +164,11 @@ public class SearchActivity extends BackActivity implements SearchView, TextView
         return false;
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.search_action_button)
     void onSearchButtonClick() {
         String keyword = mEditText.getText().toString();
-        Boolean strictSearch = mCheckBox.isChecked();
+        boolean strictSearch = mCheckBox.isChecked();
         if (StringUtils.isEmpty(keyword)) {
             mInputLayout.setError(getString(R.string.search_keyword_empty));
         } else {
@@ -188,8 +194,7 @@ public class SearchActivity extends BackActivity implements SearchView, TextView
     }
 
     @Override
-    public void onSourceLoadSuccess(List<Source> list) {
-        hideProgressBar();
+    public void onSourceLoadSuccess(@NonNull List<Source> list) {
         for (Source source : list) {
             mSourceList.add(new Switcher<>(source, true));
         }

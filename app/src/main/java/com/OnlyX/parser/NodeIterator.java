@@ -12,7 +12,7 @@ import java.util.ListIterator;
 
 public abstract class NodeIterator implements SearchIterator {
 
-    private ListIterator<Node> iterator;
+    private final ListIterator<Node> iterator;
 
     protected NodeIterator(List<Node> list) {
         this.iterator = list.isEmpty() ? null : list.listIterator();

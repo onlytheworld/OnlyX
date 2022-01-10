@@ -4,10 +4,7 @@ import com.OnlyX.manager.SourceManager;
 import com.OnlyX.model.Source;
 import com.OnlyX.ui.view.SourceView;
 
-import java.util.List;
-
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 
 /**
  * Created by Hiroshi on 2016/8/11.
@@ -24,17 +21,7 @@ public class SourcePresenter extends BasePresenter<SourceView> {
     public void load() {
         mCompositeSubscription.add(mSourceManager.list()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<List<Source>>() {
-                    @Override
-                    public void call(List<Source> list) {
-                        mBaseView.onSourceLoadSuccess(list);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        mBaseView.onSourceLoadFail();
-                    }
-                }));
+                .subscribe(list -> mBaseView.onSourceLoadSuccess(list), throwable -> mBaseView.onSourceLoadFail()));
     }
 
     public void update(Source source) {

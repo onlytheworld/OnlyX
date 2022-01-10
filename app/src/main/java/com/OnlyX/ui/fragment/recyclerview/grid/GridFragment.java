@@ -1,12 +1,14 @@
 package com.OnlyX.ui.fragment.recyclerview.grid;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.view.View;
+
 import androidx.annotation.ColorRes;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.view.View;
 
 import com.OnlyX.R;
 import com.OnlyX.manager.SourceManager;
@@ -14,7 +16,6 @@ import com.OnlyX.model.Comic;
 import com.OnlyX.model.MiniComic;
 import com.OnlyX.ui.activity.DetailActivity;
 import com.OnlyX.ui.activity.TaskActivity;
-import com.OnlyX.ui.adapter.BaseAdapter;
 import com.OnlyX.ui.adapter.GridAdapter;
 import com.OnlyX.ui.fragment.dialog.ItemDialogFragment;
 import com.OnlyX.ui.fragment.dialog.MessageDialogFragment;
@@ -22,6 +23,7 @@ import com.OnlyX.ui.fragment.recyclerview.RecyclerViewFragment;
 import com.OnlyX.ui.view.GridView;
 import com.OnlyX.utils.HintUtils;
 import com.OnlyX.utils.StringUtils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -38,18 +40,19 @@ public abstract class GridFragment extends RecyclerViewFragment implements GridV
     protected static final int DIALOG_REQUEST_OPERATION = 0;
     protected GridAdapter mGridAdapter;
     protected long mSavedId = -1;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.grid_action_button)
     FloatingActionButton mActionButton;
 
     @Override
-    protected BaseAdapter initAdapter() {
-        mGridAdapter = new GridAdapter(getActivity(), new LinkedList<MiniComic>());
+    protected GridAdapter initAdapter() {
+        mGridAdapter = new GridAdapter(getActivity(), new LinkedList<>());
         mGridAdapter.setProvider(getAppInstance().getBuilderProvider());
-        mGridAdapter.setTitleGetter(SourceManager.getInstance(this).new TitleGetter());
+        mGridAdapter.setSMGetter(SourceManager.getInstance(this).new SMGetter());
         mRecyclerView.setRecycledViewPool(getAppInstance().getGridRecycledPool());
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 switch (newState) {
                     case RecyclerView.SCROLL_STATE_DRAGGING:
                         getAppInstance().getBuilderProvider().pause();
@@ -71,6 +74,7 @@ public abstract class GridFragment extends RecyclerViewFragment implements GridV
         return manager;
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.grid_action_button)
     void onActionButtonClick() {
         performActionButtonClick();
@@ -90,7 +94,7 @@ public abstract class GridFragment extends RecyclerViewFragment implements GridV
         ItemDialogFragment fragment = ItemDialogFragment.newInstance(R.string.common_operation_select,
                 getOperationItems(), DIALOG_REQUEST_OPERATION);
         fragment.setTargetFragment(this, 0);
-        fragment.show(getFragmentManager(), null);
+        fragment.show(requireActivity().getSupportFragmentManager(), null);
         return true;
     }
 
@@ -112,7 +116,7 @@ public abstract class GridFragment extends RecyclerViewFragment implements GridV
 
     @Override
     public void onThemeChange(@ColorRes int primary, @ColorRes int accent) {
-        mActionButton.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), accent));
+        mActionButton.setBackgroundTintList(ContextCompat.getColorStateList(requireActivity(), accent));
     }
 
     protected void showComicInfo(Comic comic, int request) {
@@ -120,7 +124,7 @@ public abstract class GridFragment extends RecyclerViewFragment implements GridV
             MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.common_execute_fail,
                     R.string.comic_info_not_found, true, request);
             fragment.setTargetFragment(this, 0);
-            fragment.show(getFragmentManager(), null);
+            fragment.show(requireActivity().getSupportFragmentManager(), null);
             return;
         }
         String content =
@@ -140,7 +144,7 @@ public abstract class GridFragment extends RecyclerViewFragment implements GridV
         MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.comic_info,
                 content, true, request);
         fragment.setTargetFragment(this, 0);
-        fragment.show(getFragmentManager(), null);
+        fragment.show(requireActivity().getSupportFragmentManager(), null);
     }
 
     protected abstract void performActionButtonClick();

@@ -1,10 +1,12 @@
 package com.OnlyX.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.graphics.PorterDuff;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import android.view.View;
 import android.widget.ProgressBar;
+
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.OnlyX.R;
 import com.OnlyX.utils.ThemeUtils;
@@ -16,6 +18,7 @@ import butterknife.BindView;
  */
 public abstract class BackActivity extends BaseActivity {
 
+    @SuppressLint("NonConstantResourceId")
     @Nullable
     @BindView(R.id.custom_progress_bar)
     ProgressBar mProgressBar;
@@ -24,12 +27,7 @@ public abstract class BackActivity extends BaseActivity {
     protected void initToolbar() {
         super.initToolbar();
         if (mToolbar != null) {
-            mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onBackPressed();
-                }
-            });
+            mToolbar.setNavigationOnClickListener(v -> onBackPressed());
         }
     }
 

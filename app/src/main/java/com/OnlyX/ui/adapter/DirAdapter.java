@@ -1,10 +1,13 @@
 package com.OnlyX.ui.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.OnlyX.R;
 
@@ -22,17 +25,18 @@ public class DirAdapter extends BaseAdapter<String> {
         super(context, list);
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.item_dir, parent, false);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = inflate(R.layout.item_dir, parent, false);
         return new DirHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         DirHolder viewHolder = (DirHolder) holder;
-        viewHolder.mDirTitle.setText(mDataSet.get(position));
+        viewHolder.mDirTitle.setText(get(position));
     }
 
     @Override
@@ -41,6 +45,7 @@ public class DirAdapter extends BaseAdapter<String> {
     }
 
     static class DirHolder extends BaseAdapter.BaseViewHolder {
+        @SuppressLint("NonConstantResourceId")
         @BindView(R.id.item_dir_title)
         TextView mDirTitle;
 

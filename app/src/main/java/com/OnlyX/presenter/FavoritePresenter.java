@@ -14,8 +14,6 @@ import java.util.List;
 
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
 
 /**
  * Created by Hiroshi on 2016/7/6.
@@ -33,41 +31,17 @@ public class FavoritePresenter extends BasePresenter<FavoriteView> {
         mTagRefManager = TagRefManager.getInstance(mBaseView);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void initSubscription() {
         super.initSubscription();
-        addSubscription(RxEvent.EVENT_COMIC_FAVORITE, new Action1<RxEvent>() {
-            @Override
-            public void call(RxEvent rxEvent) {
-                MiniComic comic = (MiniComic) rxEvent.getData();
-                mBaseView.OnComicFavorite(comic);
-            }
+        addSubscription(RxEvent.EVENT_COMIC_FAVORITE, rxEvent -> {
+            MiniComic comic = (MiniComic) rxEvent.getData();
+            mBaseView.OnComicFavorite(comic);
         });
-        addSubscription(RxEvent.EVENT_COMIC_UNFAVORITE, new Action1<RxEvent>() {
-            @Override
-            public void call(RxEvent rxEvent) {
-                mBaseView.OnComicUnFavorite((long) rxEvent.getData());
-            }
-        });
-        addSubscription(RxEvent.EVENT_COMIC_FAVORITE_RESTORE, new Action1<RxEvent>() {
-            @Override
-            public void call(RxEvent rxEvent) {
-                mBaseView.OnComicRestore((List<MiniComic>) rxEvent.getData());
-            }
-        });
-        addSubscription(RxEvent.EVENT_COMIC_READ, new Action1<RxEvent>() {
-            @Override
-            public void call(RxEvent rxEvent) {
-                mBaseView.onComicRead((MiniComic) rxEvent.getData());
-            }
-        });
-        addSubscription(RxEvent.EVENT_COMIC_CANCEL_HIGHLIGHT, new Action1<RxEvent>() {
-            @Override
-            public void call(RxEvent rxEvent) {
-                mBaseView.onHighlightCancel((MiniComic) rxEvent.getData());
-            }
-        });
+        addSubscription(RxEvent.EVENT_COMIC_UNFAVORITE, rxEvent -> mBaseView.OnComicUnFavorite((long) rxEvent.getData()));
+        addSubscription(RxEvent.EVENT_COMIC_FAVORITE_RESTORE, rxEvent -> mBaseView.OnComicRestore((List<MiniComic>) rxEvent.getData()));
+        addSubscription(RxEvent.EVENT_COMIC_READ, rxEvent -> mBaseView.onComicRead((MiniComic) rxEvent.getData()));
+        addSubscription(RxEvent.EVENT_COMIC_CANCEL_HIGHLIGHT, rxEvent -> mBaseView.onHighlightCancel((MiniComic) rxEvent.getData()));
     }
 
     public Comic load(long id) {
@@ -76,31 +50,16 @@ public class FavoritePresenter extends BasePresenter<FavoriteView> {
 
     public void load() {
         mCompositeSubscription.add(mComicManager.listFavoriteInRx()
-                .compose(new ToAnotherList<>(new Func1<Comic, MiniComic>() {
-                    @Override
-                    public MiniComic call(Comic comic) {
-                        return new MiniComic(comic);
-                    }
-                }))
+                .compose(new ToAnotherList<>(MiniComic::new))
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<List<MiniComic>>() {
-                    @Override
-                    public void call(List<MiniComic> list) {
-                        mBaseView.onComicLoadSuccess(list);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        mBaseView.onComicLoadFail();
-                    }
-                }));
+                .subscribe(list -> mBaseView.onComicLoadSuccess(list), throwable -> mBaseView.onComicLoadFail()));
     }
 
     public void cancelAllHighlight() {
         mComicManager.cancelHighlight();
     }
 
-    public void unfavoriteComic(long id) {
+    public void deleteFavoriteComic(long id) {
         Comic comic = mComicManager.load(id);
         comic.setFavorite(null);
         mTagRefManager.deleteByComic(id);
@@ -111,12 +70,9 @@ public class FavoritePresenter extends BasePresenter<FavoriteView> {
     public void checkUpdate() {
         final List<Comic> list = mComicManager.listFavorite();
         mCompositeSubscription.add(Manga.checkUpdate(mSourceManager, list)
-                .doOnNext(new Action1<Comic>() {
-                    @Override
-                    public void call(Comic comic) {
-                        if (comic != null) {
-                            mComicManager.update(comic);
-                        }
+                .doOnNext(comic -> {
+                    if (comic != null) {
+                        mComicManager.update(comic);
                     }
                 })
                 .onBackpressureBuffer()

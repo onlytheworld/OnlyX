@@ -1,20 +1,22 @@
 package com.OnlyX.ui.widget.rvp;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PointF;
-import android.os.Build;
 import android.os.Parcelable;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.LinearSmoothScroller;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 /**
  * RecyclerViewPager
@@ -37,7 +39,7 @@ public class RecyclerViewPager extends RecyclerView {
     private RecyclerViewPagerAdapter<?> mViewPagerAdapter;
     private float mTouchSpan;
     private OnPageChangedListener mOnPageChangedListener;
-    private GlobalLayoutListener mGlobalLayoutListener = new GlobalLayoutListener();
+    private final GlobalLayoutListener mGlobalLayoutListener = new GlobalLayoutListener();
     private int mSmoothScrollTargetPosition = -1;
     private int mPositionBeforeScroll = -1;
     private float mTriggerOffset = 0.05f;
@@ -65,7 +67,7 @@ public class RecyclerViewPager extends RecyclerView {
             Field fLayoutState = state.getClass().getDeclaredField("mLayoutState");
             fLayoutState.setAccessible(true);
             Object layoutState = fLayoutState.get(state);
-            Field fAnchorOffset = layoutState.getClass().getDeclaredField("mAnchorOffset");
+            Field fAnchorOffset = Objects.requireNonNull(layoutState).getClass().getDeclaredField("mAnchorOffset");
             Field fAnchorPosition = layoutState.getClass().getDeclaredField("mAnchorPosition");
             fAnchorPosition.setAccessible(true);
             fAnchorOffset.setAccessible(true);
@@ -113,7 +115,7 @@ public class RecyclerViewPager extends RecyclerView {
     public boolean fling(int velocityX, int velocityY) {
         boolean flinging = super.fling((int) (velocityX * FLING_FACTOR), (int) (velocityY * FLING_FACTOR));
         if (flinging) {
-            if (getLayoutManager().canScrollHorizontally()) {
+            if (Objects.requireNonNull(getLayoutManager()).canScrollHorizontally()) {
                 adjustPositionX(velocityX);
             } else {
                 adjustPositionY(velocityY);
@@ -145,7 +147,7 @@ public class RecyclerViewPager extends RecyclerView {
         if (position == RecyclerView.NO_POSITION) {
             return;
         }
-        getLayoutManager().startSmoothScroll(linearSmoothScroller);
+        Objects.requireNonNull(getLayoutManager()).startSmoothScroll(linearSmoothScroller);
     }
 
     @Override
@@ -182,7 +184,7 @@ public class RecyclerViewPager extends RecyclerView {
      */
     public int getCurrentPosition() {
         int curPosition;
-        if (getLayoutManager().canScrollHorizontally()) {
+        if (Objects.requireNonNull(getLayoutManager()).canScrollHorizontally()) {
             curPosition = RecyclerViewUtils.getCenterXChildPosition(this);
         } else {
             curPosition = RecyclerViewUtils.getCenterYChildPosition(this);
@@ -284,6 +286,7 @@ public class RecyclerViewPager extends RecyclerView {
         return super.dispatchTouchEvent(ev);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         if (e.getAction() == MotionEvent.ACTION_MOVE) {
@@ -311,7 +314,7 @@ public class RecyclerViewPager extends RecyclerView {
         super.onScrollStateChanged(state);
         if (state == SCROLL_STATE_DRAGGING) {
             mNeedAdjust = true;
-            mCurView = getLayoutManager().canScrollHorizontally() ? RecyclerViewUtils.getCenterXChild(this) :
+            mCurView = Objects.requireNonNull(getLayoutManager()).canScrollHorizontally() ? RecyclerViewUtils.getCenterXChild(this) :
                     RecyclerViewUtils.getCenterYChild(this);
             if (mCurView != null) {
                 if (mHasCalledOnPageChanged) {
@@ -328,7 +331,7 @@ public class RecyclerViewPager extends RecyclerView {
         } else if (state == SCROLL_STATE_SETTLING) {
             mNeedAdjust = false;
             if (mCurView != null) {
-                if (getLayoutManager().canScrollHorizontally()) {
+                if (Objects.requireNonNull(getLayoutManager()).canScrollHorizontally()) {
                     mTouchSpan = mCurView.getLeft() - mFirstLeftWhenDragging;
                 } else {
                     mTouchSpan = mCurView.getTop() - mFirstTopWhenDragging;
@@ -339,7 +342,7 @@ public class RecyclerViewPager extends RecyclerView {
             mCurView = null;
         } else if (state == SCROLL_STATE_IDLE) {
             if (mNeedAdjust) {
-                int targetPosition = getLayoutManager().canScrollHorizontally() ? RecyclerViewUtils.getCenterXChildPosition(this) :
+                int targetPosition = Objects.requireNonNull(getLayoutManager()).canScrollHorizontally() ? RecyclerViewUtils.getCenterXChildPosition(this) :
                         RecyclerViewUtils.getCenterYChildPosition(this);
                 if (mCurView != null) {
                     targetPosition = getChildAdapterPosition(mCurView);
@@ -415,11 +418,7 @@ public class RecyclerViewPager extends RecyclerView {
     private class GlobalLayoutListener implements ViewTreeObserver.OnGlobalLayoutListener {
         @Override
         public void onGlobalLayout() {
-            if (Build.VERSION.SDK_INT < 16) {
-                getViewTreeObserver().removeGlobalOnLayoutListener(this);
-            } else {
-                getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
+            getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
             if (mSmoothScrollTargetPosition >= 0 && mSmoothScrollTargetPosition < getItemCount()) {
                 if (mOnPageChangedListener != null) {

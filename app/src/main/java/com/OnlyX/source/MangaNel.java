@@ -1,13 +1,10 @@
 package com.OnlyX.source;
 
-import android.util.Pair;
-
 import com.OnlyX.model.Chapter;
 import com.OnlyX.model.Comic;
 import com.OnlyX.model.ImageUrl;
 import com.OnlyX.model.Source;
 import com.OnlyX.parser.JsonIterator;
-import com.OnlyX.parser.MangaCategory;
 import com.OnlyX.parser.MangaParser;
 import com.OnlyX.parser.SearchIterator;
 import com.OnlyX.soup.Node;
@@ -17,14 +14,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import okhttp3.FormBody;
-import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -38,11 +36,11 @@ public class MangaNel extends MangaParser {
     public static final String DEFAULT_TITLE = "MangaNel";
 
     public MangaNel(Source source) {
-        init(source, new Category());
+        init(source, null);
     }
 
     public static Source getDefaultSource() {
-        return new Source(null, DEFAULT_TITLE, TYPE, true);
+        return new Source(null, DEFAULT_TITLE, TYPE, false);
     }
 
     /**
@@ -190,8 +188,10 @@ public class MangaNel extends MangaParser {
      * 获取下载图片时的 HTTP 请求头，一般用来设置 Referer 和 Cookie
      */
     @Override
-    public Headers getHeader() {
-        return Headers.of("Referer", "http://manganelo.com/");
+    public Map<String, String> getHeader() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Referer", "http://manganelo.com/");
+        return headers;
     }
 
     @Override
@@ -203,9 +203,9 @@ public class MangaNel extends MangaParser {
     public List<Comic> parseCategory(String html, int page) {
         List<Comic> list = new LinkedList<>();
         Node body = new Node(html);
-        int total = Integer.parseInt(StringUtils.match("\\d+", body.list("div.phan-trang > a")
+        int total = Integer.parseInt(Objects.requireNonNull(StringUtils.match("\\d+", body.list("div.phan-trang > a")
                 .get(4)
-                .href(), 0));
+                .href(), 0)));
         if (page <= total) {
             for (Node node : body.list("div.truyen-list > div.list-truyen-item-wrap")) {
                 String cid = node.href("h3 > a").replace("http://manganelo.com/manga/", "");
@@ -218,94 +218,94 @@ public class MangaNel extends MangaParser {
         }
         return list;
     }
-
-    private static class Category extends MangaCategory {
-
-        @Override
-        public boolean isComposite() {
-            return true;
-        }
-
-        @Override
-        public String getFormat(String... args) {
-            String path = "category=".concat(args[CATEGORY_SUBJECT])
-                    .concat("&alpha=all&state=")
-                    .concat(args[CATEGORY_PROGRESS])
-                    .concat("&group=all")
-                    .trim();
-            path = path.replaceAll("\\s+", "-");
-            return StringUtils.format("http://manganel.com/manga_list?type=new&page=%%d&%s", path);
-        }
-
-        @Override
-        protected List<Pair<String, String>> getSubject() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("All", "all"));
-            list.add(Pair.create("Action", "2"));
-//            list.add(Pair.create("Adult", "3"));
-            list.add(Pair.create("Adventure", "4"));
-            list.add(Pair.create("Comedy", "6"));
-            list.add(Pair.create("Cooking", "7"));
-//            list.add(Pair.create("Donjinshi", "9"));
-            list.add(Pair.create("Drama", "10"));
-//            list.add(Pair.create("Ecchi", "11"));
-            list.add(Pair.create("Fantasy", "12"));
-//            list.add(Pair.create("Gender bender", "13"));
-//            list.add(Pair.create("Harem", "14"));
-            list.add(Pair.create("Historical", "15"));
-            list.add(Pair.create("Horror", "16"));
-            list.add(Pair.create("Josei", "17"));
-            list.add(Pair.create("Manhua", "44"));
-            list.add(Pair.create("Manhwa", "43"));
-            list.add(Pair.create("Martial Arts", "19"));
-            list.add(Pair.create("Mature", "20"));
-            list.add(Pair.create("Mecha", "21"));
-            list.add(Pair.create("Medical", "22"));
-            list.add(Pair.create("Mystery", "24"));
-            list.add(Pair.create("One Shot", "25"));
-            list.add(Pair.create("Psychological", "26"));
-            list.add(Pair.create("Romance", "27"));
-            list.add(Pair.create("Sci Fi", "29"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasArea() {
-            return false;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getArea() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("All", ""));
-            return list;
-        }
-
-        @Override
-        public boolean hasProgress() {
-            return true;
-        }
-
-        @Override
-        public List<Pair<String, String>> getProgress() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("All", "all"));
-            list.add(Pair.create("Ongoing", "Ongoing"));
-            list.add(Pair.create("Completed", "Completed"));
-            return list;
-        }
-
-        @Override
-        protected boolean hasOrder() {
-            return false;
-        }
-
-        @Override
-        protected List<Pair<String, String>> getOrder() {
-            List<Pair<String, String>> list = new ArrayList<>();
-            list.add(Pair.create("All", ""));
-            return list;
-        }
-
-    }
+//
+//    private static class Category extends MangaCategory {
+//
+//        @Override
+//        public boolean isComposite() {
+//            return true;
+//        }
+//
+//        @Override
+//        public String getFormat(String... args) {
+//            String path = "category=".concat(args[CATEGORY_SUBJECT])
+//                    .concat("&alpha=all&state=")
+//                    .concat(args[CATEGORY_PROGRESS])
+//                    .concat("&group=all")
+//                    .trim();
+//            path = path.replaceAll("\\s+", "-");
+//            return StringUtils.format("http://manganel.com/manga_list?type=new&page=%%d&%s", path);
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getSubject() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("All", "all"));
+//            list.add(Pair.create("Action", "2"));
+////            list.add(Pair.create("Adult", "3"));
+//            list.add(Pair.create("Adventure", "4"));
+//            list.add(Pair.create("Comedy", "6"));
+//            list.add(Pair.create("Cooking", "7"));
+////            list.add(Pair.create("Donjinshi", "9"));
+//            list.add(Pair.create("Drama", "10"));
+////            list.add(Pair.create("Ecchi", "11"));
+//            list.add(Pair.create("Fantasy", "12"));
+////            list.add(Pair.create("Gender bender", "13"));
+////            list.add(Pair.create("Harem", "14"));
+//            list.add(Pair.create("Historical", "15"));
+//            list.add(Pair.create("Horror", "16"));
+//            list.add(Pair.create("Josei", "17"));
+//            list.add(Pair.create("Manhua", "44"));
+//            list.add(Pair.create("Manhwa", "43"));
+//            list.add(Pair.create("Martial Arts", "19"));
+//            list.add(Pair.create("Mature", "20"));
+//            list.add(Pair.create("Mecha", "21"));
+//            list.add(Pair.create("Medical", "22"));
+//            list.add(Pair.create("Mystery", "24"));
+//            list.add(Pair.create("One Shot", "25"));
+//            list.add(Pair.create("Psychological", "26"));
+//            list.add(Pair.create("Romance", "27"));
+//            list.add(Pair.create("Sci Fi", "29"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasArea() {
+//            return false;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getArea() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("All", ""));
+//            return list;
+//        }
+//
+//        @Override
+//        public boolean hasProgress() {
+//            return true;
+//        }
+//
+//        @Override
+//        public List<Pair<String, String>> getProgress() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("All", "all"));
+//            list.add(Pair.create("Ongoing", "Ongoing"));
+//            list.add(Pair.create("Completed", "Completed"));
+//            return list;
+//        }
+//
+//        @Override
+//        protected boolean hasOrder() {
+//            return false;
+//        }
+//
+//        @Override
+//        protected List<Pair<String, String>> getOrder() {
+//            List<Pair<String, String>> list = new ArrayList<>();
+//            list.add(Pair.create("All", ""));
+//            return list;
+//        }
+//
+//    }
 }

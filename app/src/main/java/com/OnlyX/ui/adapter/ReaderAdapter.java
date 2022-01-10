@@ -1,30 +1,34 @@
 package com.OnlyX.ui.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.Animatable;
 import android.net.Uri;
-import androidx.annotation.IntDef;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilder;
-import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilderSupplier;
-import com.facebook.drawee.controller.BaseControllerListener;
-import com.facebook.drawee.view.DraweeView;
-import com.facebook.imagepipeline.common.ResizeOptions;
-import com.facebook.imagepipeline.image.ImageInfo;
-import com.facebook.imagepipeline.listener.BaseRequestListener;
-import com.facebook.imagepipeline.request.ImageRequest;
-import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.OnlyX.App;
 import com.OnlyX.R;
 import com.OnlyX.fresco.processor.MangaPostprocessor;
+import com.OnlyX.manager.SourceManager;
 import com.OnlyX.model.ImageUrl;
 import com.OnlyX.ui.widget.OnTapGestureListener;
 import com.OnlyX.ui.widget.PhotoDraweeView;
 import com.OnlyX.ui.widget.RetryDraweeView;
+import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilder;
+import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilderSupplier;
+import com.facebook.drawee.controller.BaseControllerListener;
+import com.facebook.imagepipeline.common.ResizeOptions;
+import com.facebook.imagepipeline.image.ImageInfo;
+import com.facebook.imagepipeline.listener.BaseRequestListener;
+import com.facebook.imagepipeline.request.BasePostprocessor;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -55,27 +59,30 @@ public class ReaderAdapter extends BaseAdapter<ImageUrl> {
     private boolean isBanTurn;
     private boolean isDoubleTap;
     private float mScaleFactor;
+    private final int mSource;
 
-    public ReaderAdapter(Context context, List<ImageUrl> list) {
+    public ReaderAdapter(Context context, List<ImageUrl> list, int source) {
         super(context, list);
+        mSource = source;
     }
 
     @Override
     public int getItemViewType(int position) {
-        return mDataSet.get(position).isLazy() ? TYPE_LOADING : TYPE_IMAGE;
+        return get(position).isLazy() ? TYPE_LOADING : TYPE_IMAGE;
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         int resId = viewType == TYPE_IMAGE ? (reader == READER_PAGE ?
                 R.layout.item_picture : R.layout.item_picture_stream) : R.layout.item_loading;
-        View view = mInflater.inflate(resId, parent, false);
+        View view = inflate(resId, parent, false);
         return new ImageHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
-        final ImageUrl imageUrl = mDataSet.get(position);
+    public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, int position) {
+        final ImageUrl imageUrl = get(position);
         if (imageUrl.isLazy()) {
             if (!imageUrl.isLoading() && mLazyLoadListener != null) {
                 imageUrl.setLoading(true);
@@ -84,7 +91,7 @@ public class ReaderAdapter extends BaseAdapter<ImageUrl> {
             return;
         }
 
-        final DraweeView draweeView = ((ImageHolder) holder).draweeView;
+        RetryDraweeView draweeView = ((ImageHolder) holder).draweeView;
 
         PipelineDraweeControllerBuilder builder = isNeedResize(imageUrl) ?
                 mLargeControllerSupplier.get() : mControllerSupplier.get();
@@ -100,7 +107,7 @@ public class ReaderAdapter extends BaseAdapter<ImageUrl> {
                     @Override
                     public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
                         if (imageInfo != null) {
-                            imageUrl.setSuccess(true);
+                            imageUrl.setSuccess();
                             ((PhotoDraweeView) draweeView).update(imageUrl.getId());
                         }
                     }
@@ -111,7 +118,7 @@ public class ReaderAdapter extends BaseAdapter<ImageUrl> {
                     @Override
                     public void onFinalImageSet(String id, ImageInfo imageInfo, Animatable animatable) {
                         if (imageInfo != null) {
-                            imageUrl.setSuccess(true);
+                            imageUrl.setSuccess();
                             if (isVertical) {
                                 draweeView.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
                             } else {
@@ -146,6 +153,20 @@ public class ReaderAdapter extends BaseAdapter<ImageUrl> {
                 @Override
                 public void onRequestSuccess(ImageRequest request, String requestId, boolean isPrefetch) {
                     imageUrl.setUrl(url);
+                }
+            });
+            imageRequestBuilder.setPostprocessor(new BasePostprocessor() {
+                @Override
+                public String getName() {
+                    return "redMeshPostprocessor";
+                }
+
+                @Override
+                public void process(Bitmap bitmap) {
+//                    if (!imageUrl.isDownload()) {
+//                        imageUrl.setDownload(true);
+                    SourceManager.getInstance().getParser(mSource).decodeImages(bitmap, url);
+//                    }
                 }
             });
             request[i] = imageRequestBuilder.build();
@@ -212,14 +233,14 @@ public class ReaderAdapter extends BaseAdapter<ImageUrl> {
             case READER_PAGE:
                 return new RecyclerView.ItemDecoration() {
                     @Override
-                    public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                    public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
                         outRect.set(0, 0, 0, 0);
                     }
                 };
             case READER_STREAM:
                 return new RecyclerView.ItemDecoration() {
                     @Override
-                    public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                    public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
                         if (isVertical) {
                             outRect.set(0, 10, 0, 10);
                         } else {
@@ -234,16 +255,16 @@ public class ReaderAdapter extends BaseAdapter<ImageUrl> {
      * 假设一定找得到
      */
     public int getPositionByNum(int current, int num, boolean reverse) {
-        while (mDataSet.get(current).getNum() != num) {
+        while (get(current).getNum() != num) {
             current = reverse ? current - 1 : current + 1;
         }
         return current;
     }
 
     public int getPositionById(int id) {
-        int size = mDataSet.size();
+        int size = size();
         for (int i = 0; i < size; ++i) {
-            if (mDataSet.get(i).getId() == id) {
+            if (get(i).getId() == id) {
                 return i;
             }
         }
@@ -251,8 +272,8 @@ public class ReaderAdapter extends BaseAdapter<ImageUrl> {
     }
 
     public void update(int id, String url) {
-        for (int i = 0; i < mDataSet.size(); ++i) {
-            ImageUrl imageUrl = mDataSet.get(i);
+        for (int i = 0; i < size(); ++i) {
+            ImageUrl imageUrl = get(i);
             if (imageUrl.getId() == id && imageUrl.isLoading()) {
                 if (url == null) {
                     imageUrl.setLoading(false);

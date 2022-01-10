@@ -1,19 +1,20 @@
 package com.OnlyX.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import android.util.SparseArray;
 import android.view.View;
 import android.widget.FrameLayout;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.OnlyX.R;
 import com.OnlyX.fresco.ControllerBuilderProvider;
 import com.OnlyX.global.Extra;
 import com.OnlyX.manager.SourceManager;
 import com.OnlyX.model.Comic;
-import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.presenter.ResultPresenter;
 import com.OnlyX.ui.adapter.BaseAdapter;
 import com.OnlyX.ui.adapter.ResultAdapter;
@@ -39,8 +40,10 @@ public class ResultActivity extends BackActivity implements ResultView, BaseAdap
      * Extra: 格式 图源
      */
     public static final int LAUNCH_MODE_CATEGORY = 1;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.result_recycler_view)
     RecyclerView mRecyclerView;
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.result_layout)
     FrameLayout mLayoutView;
     private ResultAdapter mResultAdapter;
@@ -49,10 +52,12 @@ public class ResultActivity extends BackActivity implements ResultView, BaseAdap
     private ControllerBuilderProvider mProvider;
     private int type;
 
+    @NonNull
     public static Intent createIntent(Context context, String keyword, int source, int type) {
         return createIntent(context, keyword, new int[]{source}, type);
     }
 
+    @NonNull
     public static Intent createIntent(Context context, String keyword, int[] array, int type) {
         Intent intent = new Intent(context, ResultActivity.class);
         intent.putExtra(Extra.EXTRA_MODE, type);
@@ -62,6 +67,7 @@ public class ResultActivity extends BackActivity implements ResultView, BaseAdap
         return intent;
     }
 
+    @NonNull
     public static Intent createIntent(Context context, String keyword, boolean strictSearch, int[] array, int type) {
         Intent intent = createIntent(context, keyword, array, type);
 //        intent.putExtra(Extra.EXTRA_MODE, type);
@@ -71,15 +77,8 @@ public class ResultActivity extends BackActivity implements ResultView, BaseAdap
         return intent;
     }
 
-    // 建个Map把漫源搜索的上一个请求的url存下来，最后利用Activity生命周期清掉
-    //
-    // 解决重复加载列表问题思路：
-    // 在新的一次请求（上拉加载）前检查新Url与上一次请求的是否一致。
-    // 一致则返回空请求，达到阻断请求的目的；不一致则更新Map中存的Url，Map中不存在则新建
-    public static SparseArray<String> searchUrls = new SparseArray<>();
-
     @Override
-    protected BasePresenter initPresenter() {
+    protected ResultPresenter initPresenter() {
         String keyword = getIntent().getStringExtra(Extra.EXTRA_KEYWORD);
         int[] source = getIntent().getIntArrayExtra(Extra.EXTRA_SOURCE);
         boolean strictSearch = getIntent().getBooleanExtra(Extra.EXTRA_STRICT, true);
@@ -92,24 +91,23 @@ public class ResultActivity extends BackActivity implements ResultView, BaseAdap
     protected void initView() {
         super.initView();
         mLayoutManager = new LinearLayoutManager(this);
-        mResultAdapter = new ResultAdapter(this, new LinkedList<Comic>());
+        mResultAdapter = new ResultAdapter(this, new LinkedList<>());
         mResultAdapter.setOnItemClickListener(this);
-        mProvider = new ControllerBuilderProvider(this, SourceManager.getInstance(this).new HeaderGetter(), true);
-        mResultAdapter.setProvider(mProvider);
-        mResultAdapter.setTitleGetter(SourceManager.getInstance(this).new TitleGetter());
+        mProvider = new ControllerBuilderProvider(this, SourceManager.getInstance(this).new SMGetter(), true);
+        mResultAdapter.setSMGetter(SourceManager.getInstance(this).new SMGetter());
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.addItemDecoration(mResultAdapter.getItemDecoration());
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 if (mLayoutManager.findLastVisibleItemPosition() >= mResultAdapter.getItemCount() - 4 && dy > 0) {
                     load();
                 }
             }
 
             @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 switch (newState) {
                     case RecyclerView.SCROLL_STATE_DRAGGING:
                         mProvider.pause();
@@ -121,10 +119,6 @@ public class ResultActivity extends BackActivity implements ResultView, BaseAdap
             }
         });
         mRecyclerView.setAdapter(mResultAdapter);
-    }
-
-    @Override
-    protected void initData() {
         type = getIntent().getIntExtra(Extra.EXTRA_MODE, -1);
         load();
     }

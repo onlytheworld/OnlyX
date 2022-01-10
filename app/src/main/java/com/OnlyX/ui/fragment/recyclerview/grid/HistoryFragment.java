@@ -4,7 +4,6 @@ import android.os.Bundle;
 
 import com.OnlyX.R;
 import com.OnlyX.model.MiniComic;
-import com.OnlyX.presenter.BasePresenter;
 import com.OnlyX.presenter.HistoryPresenter;
 import com.OnlyX.ui.fragment.dialog.MessageDialogFragment;
 import com.OnlyX.ui.view.HistoryView;
@@ -27,7 +26,7 @@ public class HistoryFragment extends GridFragment implements HistoryView {
     private HistoryPresenter mPresenter;
 
     @Override
-    protected BasePresenter initPresenter() {
+    protected HistoryPresenter initPresenter() {
         mPresenter = new HistoryPresenter();
         mPresenter.attachView(this);
         return mPresenter;
@@ -46,7 +45,7 @@ public class HistoryFragment extends GridFragment implements HistoryView {
         MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.dialog_confirm,
                 R.string.history_clear_confirm, true, DIALOG_REQUEST_CLEAR);
         fragment.setTargetFragment(this, 0);
-        fragment.show(getFragmentManager(), null);
+        fragment.show(requireActivity().getSupportFragmentManager(), null);
     }
 
     @Override
@@ -62,7 +61,7 @@ public class HistoryFragment extends GridFragment implements HistoryView {
                         MessageDialogFragment fragment = MessageDialogFragment.newInstance(R.string.dialog_confirm,
                                 R.string.history_delete_confirm, true, DIALOG_REQUEST_DELETE);
                         fragment.setTargetFragment(this, 0);
-                        fragment.show(getFragmentManager(), null);
+                        fragment.show(requireActivity().getSupportFragmentManager(), null);
                 }
                 break;
             case DIALOG_REQUEST_CLEAR:

@@ -1,20 +1,18 @@
 package com.OnlyX.ui.fragment.dialog;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.ActivityCompat;
 
 import com.OnlyX.R;
 import com.OnlyX.component.DialogCaller;
 import com.OnlyX.ui.activity.DirPickerActivity;
-import com.OnlyX.utils.PermissionUtils;
 
 /**
  * Created by Hiroshi on 2016/12/5.
@@ -28,26 +26,24 @@ public class StorageEditorDialogFragment extends EditorDialogFragment {
         return fragment;
     }
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog dialog = (AlertDialog) super.onCreateDialog(savedInstanceState);
         mEditText.setEnabled(false);
         String title = getString(R.string.settings_other_storage_edit_neutral);
-        dialog.setButton(DialogInterface.BUTTON_POSITIVE, title, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int which) {
-                int requestCode = getArguments().getInt(DialogCaller.EXTRA_DIALOG_REQUEST_CODE);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    try {
-                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                        getActivity().startActivityForResult(intent, requestCode);
-                    } catch (ActivityNotFoundException e) {
-                        ((DialogCaller) getActivity()).onDialogResult(requestCode, null);
-                    }
-                } else {
-                    Intent intent = new Intent(getActivity(), DirPickerActivity.class);
-                    getActivity().startActivityForResult(intent, requestCode);
+        dialog.setButton(DialogInterface.BUTTON_POSITIVE, title, (dialogInterface, which) -> {
+            int requestCode = requireArguments().getInt(DialogCaller.EXTRA_DIALOG_REQUEST_CODE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                    requireActivity().startActivityForResult(intent, requestCode);
+                } catch (ActivityNotFoundException e) {
+                    ((DialogCaller) requireActivity()).onDialogResult(requestCode, null);
                 }
+            } else {
+                Intent intent = new Intent(getActivity(), DirPickerActivity.class);
+                requireActivity().startActivityForResult(intent, requestCode);
             }
         });
         return dialog;

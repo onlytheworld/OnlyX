@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import rx.Observable;
-import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
 /**

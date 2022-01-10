@@ -1,5 +1,6 @@
 package com.OnlyX.ui.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -13,7 +14,6 @@ import android.view.MotionEvent;
 import android.view.ViewParent;
 
 import com.facebook.drawee.drawable.ScalingUtils;
-import com.facebook.drawee.generic.GenericDraweeHierarchy;
 
 /**
  * https://github.com/ongakuer/PhotoDraweeView
@@ -43,11 +43,6 @@ public class PhotoDraweeView extends RetryDraweeView implements OnScaleDragGestu
     private float mScaleFactor = 2.0f;
     private boolean isDoubleTap = true;
     private FlingRunnable mCurrentFlingRunnable;
-
-    public PhotoDraweeView(Context context, GenericDraweeHierarchy hierarchy) {
-        super(context, hierarchy);
-        init();
-    }
 
     public PhotoDraweeView(Context context) {
         this(context, null, 0);
@@ -82,6 +77,7 @@ public class PhotoDraweeView extends RetryDraweeView implements OnScaleDragGestu
         mGestureDetector.setOnDoubleTapListener(this);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = MotionEventCompat.getActionMasked(event);

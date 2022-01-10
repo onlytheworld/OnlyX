@@ -1,7 +1,6 @@
 package com.OnlyX.helper;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 
 import com.OnlyX.model.ComicDao;
 import com.OnlyX.model.DaoMaster;
@@ -19,10 +18,6 @@ public class DBOpenHelper extends DaoMaster.OpenHelper {
 
     public DBOpenHelper(Context context, String name) {
         super(context, name);
-    }
-
-    public DBOpenHelper(Context context, String name, SQLiteDatabase.CursorFactory factory) {
-        super(context, name, factory);
     }
 
     @Override
@@ -52,6 +47,13 @@ public class DBOpenHelper extends DaoMaster.OpenHelper {
                 updateLocal(db);
             case 9:
                 updateSource(db);
+            case 10:
+            case 11:
+            case 12:
+            case 13:
+            case 14:
+            case 15:
+//                updateSource15(db);
         }
     }
 
@@ -74,6 +76,18 @@ public class DBOpenHelper extends DaoMaster.OpenHelper {
         db.execSQL("ALTER TABLE \"SOURCE\" RENAME TO \"SOURCE2\"");
         SourceDao.createTable(db, false);
         db.execSQL("INSERT INTO \"SOURCE\" (\"_id\", \"TYPE\", \"TITLE\", \"ENABLE\")" +
+                " SELECT \"_id\", \"TYPE\", \"TITLE\", \"ENABLE\" FROM \"SOURCE2\"");
+        db.execSQL("DROP TABLE \"SOURCE2\"");
+        db.execSQL("ALTER TABLE \"COMIC\" ADD COLUMN \"URL\" TEXT");
+        db.setTransactionSuccessful();
+        db.endTransaction();
+    }
+
+    private void updateSource15(Database db) {
+        db.beginTransaction();
+        db.execSQL("ALTER TABLE \"SOURCE\" RENAME TO \"SOURCE2\"");
+        SourceDao.createTable(db, true);
+        db.execSQL("INSERT INTO \"SOURCE\" (\"_id\", \"TYPE\", \"TITLE\", \"ENABLE\", null, null)" +
                 " SELECT \"_id\", \"TYPE\", \"TITLE\", \"ENABLE\" FROM \"SOURCE2\"");
         db.execSQL("DROP TABLE \"SOURCE2\"");
         db.execSQL("ALTER TABLE \"COMIC\" ADD COLUMN \"URL\" TEXT");
